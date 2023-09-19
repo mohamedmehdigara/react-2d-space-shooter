@@ -1,3 +1,5 @@
+// App.js
+
 import React, { Component } from 'react';
 import './App.css';
 import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
@@ -10,6 +12,7 @@ class App extends Component {
     this.asteroids = [];
     this.bullets = [];
     this.quadTree = null; // Initialize the QuadTree
+    this.ship = { x: 0, y: 0, width: 20, height: 20 }; // Initialize the ship object
   }
 
   componentDidMount() {
@@ -124,25 +127,9 @@ class App extends Component {
     }
 
     // Draw the player's ship (you should have a ship object defined)
-     this.ctx.fillStyle = 'blue';
-     this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
+    this.ctx.fillStyle = 'blue';
+    this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
   }
-
-  // Inside a function or method where you work with asteroids
-  doSomethingWithAsteroid(asteroid) {
-    if (asteroid !== null && typeof asteroid !== 'undefined') {
-      // Access the 'width' property of the asteroid object
-      const asteroidWidth = asteroid.width;
-      // Continue with your logic that uses the 'asteroidWidth' variable
-      console.log('Asteroid width:', asteroidWidth);
-    } else {
-      // Handle the case where 'asteroid' is null or undefined
-      console.error("Asteroid is null or undefined.");
-    }
-  }
-
-  // Example usage
-  someAsteroid = { width: 50 }; // Replace with your actual asteroid object
 
   // Start the game
   startGame() {
