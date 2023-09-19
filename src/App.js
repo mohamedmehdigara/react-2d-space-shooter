@@ -1,22 +1,170 @@
 // App.js
-import React from 'react';
-import './App.css'; // You can create this CSS file for global styles
-import Game from './components/Game';
+// App.js
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Space Shooter Game</h1>
-      </header>
-      <main>
-        <Game />
-      </main>
-      <footer>
-        <p>Controls: Use arrow keys to move and spacebar to shoot.</p>
-      </footer>
-    </div>
-  );
+import React, { Component } from 'react';
+import './App.css';
+import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
+
+class App extends Component {
+  constructor() {
+    super();
+    this.canvasRef = React.createRef();
+    this.ctx = null;
+    this.asteroids = [];
+    this.bullets = [];
+    this.quadTree = null; // Initialize the QuadTree
+  }
+
+  componentDidMount() {
+    this.ctx = this.canvasRef.current.getContext('2d');
+    this.canvasRef.current.width = window.innerWidth;
+    this.canvasRef.current.height = window.innerHeight;
+
+    // Initialize the QuadTree with a boundary that covers the entire canvas
+    const boundary = new Rectangle(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
+    this.quadTree = new QuadTree(boundary, 4);
+
+    // Add event listeners and start the game loop
+    this.addEventListeners();
+    this.startGame();
+  }
+
+  // Add event listeners for user input
+  addEventListeners() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  // Handle keydown events (e.g., for shooting bullets)
+  handleKeyDown = (event) => {
+    if (event.key === ' ') {
+      // Spacebar is pressed, create and shoot a bullet
+      const bullet = {
+        x: this.ship.x + this.ship.width / 2,
+        y: this.ship.y,
+        width: 2,
+        height: 5,
+        speed: 5,
+      };
+      this.bullets.push(bullet);
+
+      // Insert the bullet into the QuadTree
+      this.quadTree.insert(bullet);
+    }
+  };
+
+  // Game loop
+  gameLoop = () => {
+    this.updateGameObjects();
+    this.checkCollisions();
+    this.drawGameObjects();
+    requestAnimationFrame(this.gameLoop);
+  };
+
+  // Update the game objects (e.g., move asteroids, bullets)
+  updateGameObjects() {
+    // Update asteroid positions
+    for (const asteroid of this.asteroids) {
+      asteroid.y += asteroid.speed;
+    }
+
+    // Update bullet positions and remove off-screen bullets
+    for (let i = this.bullets.length - 1; i >= 0; i--) {
+      const bullet = this.bullets[i];
+      bullet.y -= bullet.speed;
+
+      // Remove bullets that are off-screen
+      if (bullet.y + bullet.height < 0) {
+        this.bullets.splice(i, 1);
+      }
+    }
+
+    // Update the QuadTree with the current positions of objects
+    this.quadTree = new QuadTree(this.quadTree.boundary, this.quadTree.capacity);
+    for (const bullet of this.bullets) {
+      this.quadTree.insert(bullet);
+    }
+    for (const asteroid of this.asteroids) {
+      this.quadTree.insert(asteroid);
+    }
+  }
+
+  // Check collisions using the QuadTree
+  checkCollisions() {
+    // Handle collisions between bullets and asteroids
+    for (const bullet of this.bullets) {
+      const potentialColliders = this.quadTree.query(bullet);
+      for (const asteroid of potentialColliders) {
+        if (bullet.intersects(asteroid)) {
+          // Handle the collision (e.g., remove bullet and asteroid)
+          const bulletIndex = this.bullets.indexOf(bullet);
+          if (bulletIndex !== -1) {
+            this.bullets.splice(bulletIndex, 1);
+          }
+
+          const asteroidIndex = this.asteroids.indexOf(asteroid);
+          if (asteroidIndex !== -1) {
+            this.asteroids.splice(asteroidIndex, 1);
+          }
+        }
+      }
+    }
+  }
+
+  // Draw game objects on the canvas
+  drawGameObjects() {
+    this.ctx.clearRect(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
+
+    // Draw asteroids
+    for (const asteroid of this.asteroids) {
+      this.ctx.fillStyle = 'gray';
+      this.ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+    }
+
+    // Draw bullets
+    this.ctx.fillStyle = 'red';
+    for (const bullet of this.bullets) {
+      this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    }
+
+    // Draw the player's ship (you should have a ship object defined)
+     this.ctx.fillStyle = 'blue';
+     this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
+  }
+
+// Inside a function or method where you work with asteroids
+ doSomethingWithAsteroid(asteroid) {
+  if (asteroid !== null && typeof asteroid !== 'undefined') {
+    // Access the 'width' property of the asteroid object
+    const asteroidWidth = asteroid.width;
+    // Continue with your logic that uses the 'asteroidWidth' variable
+    console.log('Asteroid width:', asteroidWidth);
+  } else {
+    // Handle the case where 'asteroid' is null or undefined
+    console.error("Asteroid is null or undefined.");
+  }
+}
+
+// Example usage
+ someAsteroid = { width: 50 }; // Replace with your actual asteroid object
+
+
+  // Start the game
+  startGame() {
+    // Initialize asteroids (you should have an array of asteroid objects)
+// Initialize asteroids with sample asteroid objects
+this.asteroids = [
+  { x: 100, y: 100, width: 30, height: 30, speed: 2 },
+  { x: 200, y: 200, width: 40, height: 40, speed: 3 },
+  // Add more asteroid objects as needed
+];
+
+    // Start the game loop
+    requestAnimationFrame(this.gameLoop);
+  }
+
+  render() {
+    return <canvas ref={this.canvasRef} />;
+  }
 }
 
 export default App;
