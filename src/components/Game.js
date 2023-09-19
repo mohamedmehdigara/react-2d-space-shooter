@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import SpaceShip from './SpaceShip';
-import Asteroid from './Asteriod';
+import Asteroid from './Asteroid';
 import Bullet from './Bullet';
 
 const GameWrapper = styled.div`
@@ -10,10 +10,12 @@ const GameWrapper = styled.div`
   height: 600px;
   margin: 0 auto;
   overflow: hidden;
+  background-color: #000;
 `;
 
 const Game = () => {
   const [shipPosition, setShipPosition] = useState(375);
+  const [shipDirection, setShipDirection] = useState(1); // 1 for right, -1 for left
   const [bullets, setBullets] = useState([]);
   const [asteroids, setAsteroids] = useState([]);
 
@@ -22,11 +24,21 @@ const Game = () => {
     const gameLoop = () => {
       // Update game logic here (move the spaceship, update bullets, asteroids, etc.)
 
-      // Check for collisions
-      // Handle user input (e.g., move the spaceship)
+      // Move the spaceship
+      setShipPosition((prevPosition) => {
+        let newPosition = prevPosition + 2 * shipDirection; // Adjust speed as needed
 
-      // Update component states
-      setShipPosition((prevPosition) => prevPosition + 1); // Example: Move the spaceship to the right
+        // Bounce off the borders
+        if (newPosition < 0) {
+          newPosition = 0;
+          setShipDirection(1); // Change direction to right
+        } else if (newPosition > 750) {
+          newPosition = 750;
+          setShipDirection(-1); // Change direction to left
+        }
+
+        return newPosition;
+      });
 
       // Clean up logic (remove off-screen bullets or destroyed asteroids)
 
@@ -37,14 +49,17 @@ const Game = () => {
     // Start the game loop
     requestAnimationFrame(gameLoop);
 
-    // Add event listeners for arrow keys
+    // Add event listeners for arrow keys and spacebar for shooting
     const handleKeyPress = (e) => {
       switch (e.key) {
         case 'ArrowLeft':
-          setShipPosition((prevPosition) => prevPosition - 10);
+          setShipDirection(-1);
           break;
         case 'ArrowRight':
-          setShipPosition((prevPosition) => prevPosition + 10);
+          setShipDirection(1);
+          break;
+        case ' ':
+          handleShoot(shipPosition + 20); // Adjust the bullet position
           break;
         default:
           break;
@@ -57,7 +72,7 @@ const Game = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, []); // Empty dependency array to run the effect only once
+  }, [shipPosition, shipDirection]);
 
   const handleShoot = (bulletPosition) => {
     const newBullet = {
@@ -70,7 +85,7 @@ const Game = () => {
 
   return (
     <GameWrapper>
-      <SpaceShip position={shipPosition} onShoot={handleShoot} />
+      <SpaceShip position={shipPosition} />
       {bullets.map((bullet) => (
         <Bullet key={bullet.id} {...bullet} />
       ))}
