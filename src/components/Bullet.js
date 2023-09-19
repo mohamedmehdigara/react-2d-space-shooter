@@ -4,16 +4,13 @@ import styled from 'styled-components';
 
 const BulletWrapper = styled.div`
   position: absolute;
-  top: ${(props) => props.top}px;
-  left: ${(props) => props.left}px;
-  width: 10px;
-  height: 10px;
-  background-color: #ffff00;
-  border-radius: 50%;
+  width: 5px;
+  height: 20px;
+  background-color: #00ff00;
 `;
 
 const Bullet = ({ top, left }) => {
-  return <BulletWrapper top={top} left={left} />;
+  return <BulletWrapper style={{ top, left }} />;
 };
 
 export default Bullet;
