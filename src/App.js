@@ -2,36 +2,7 @@
 
 import React, { Component } from 'react';
 import './App.css';
-import { QuadTree, Rectangle } from './QuadTree';
-
-// Define Asteroid and Bullet classes with getBoundingBox methods
-class Asteroid {
-  constructor(x, y, width, height, speed) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.speed = speed;
-  }
-
-  getBoundingBox() {
-    return new Rectangle(this.x, this.y, this.width, this.height);
-  }
-}
-
-class Bullet {
-  constructor(x, y, width, height, speed) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.speed = speed;
-  }
-
-  getBoundingBox() {
-    return new Rectangle(this.x, this.y, this.width, this.height);
-  }
-}
+import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
 
 class App extends Component {
   constructor() {
@@ -41,6 +12,14 @@ class App extends Component {
     this.asteroids = [];
     this.bullets = [];
     this.quadTree = null;
+
+    // Define and initialize the ship object
+    this.ship = {
+      x: (window.innerWidth - 30) / 2, // Adjust the initial X position as needed
+      y: window.innerHeight - 40,      // Adjust the initial Y position as needed
+      width: 30,                       // Adjust the ship's width
+      height: 30,                      // Adjust the ship's height
+    };
   }
 
   componentDidMount() {
@@ -66,13 +45,13 @@ class App extends Component {
   handleKeyDown = (event) => {
     if (event.key === ' ') {
       // Spacebar is pressed, create and shoot a bullet
-      const bullet = new Bullet(
-        this.ship.x + this.ship.width / 2,
-        this.ship.y,
-        2,
-        5,
-        5
-      );
+      const bullet = {
+        x: this.ship.x + this.ship.width / 2,
+        y: this.ship.y,
+        width: 2,
+        height: 5,
+        speed: 5,
+      };
       this.bullets.push(bullet);
 
       // Insert the bullet into the QuadTree
@@ -120,9 +99,9 @@ class App extends Component {
   checkCollisions() {
     // Handle collisions between bullets and asteroids
     for (const bullet of this.bullets) {
-      const potentialColliders = this.quadTree.query(bullet.getBoundingBox());
+      const potentialColliders = this.quadTree.query(bullet);
       for (const asteroid of potentialColliders) {
-        if (bullet.getBoundingBox().intersects(asteroid.getBoundingBox())) {
+        if (bullet.intersects(asteroid)) {
           // Handle the collision (e.g., remove bullet and asteroid)
           const bulletIndex = this.bullets.indexOf(bullet);
           if (bulletIndex !== -1) {
@@ -154,7 +133,7 @@ class App extends Component {
       this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     }
 
-    // Draw the player's ship (you should have a ship object defined)
+    // Draw the player's ship
     this.ctx.fillStyle = 'blue';
     this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
   }
