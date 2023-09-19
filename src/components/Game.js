@@ -1,91 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
-import SpaceShip from './SpaceShip';
-import Asteroid from './Asteroid';
-import Bullet from './Bullet';
-
-const GameWrapper = styled.div`
-  position: relative;
-  width: 800px;
-  height: 600px;
-  margin: 0 auto;
-  overflow: hidden;
-  background-color: #000;
-`;
+import React, { useEffect, useRef } from 'react';
+import * as PIXI from 'pixi.js';
 
 const Game = () => {
-  const [shipPosition, setShipPosition] = useState(375);
-  const [shipDirection, setShipDirection] = useState(0);
-  const [bullets, setBullets] = useState([]);
-  const [asteroids, setAsteroids] = useState([]);
+  const pixiContainerRef = useRef(null);
 
   useEffect(() => {
-    // Game loop
-    const gameLoop = () => {
-      // Update game logic here (move the spaceship, update bullets, asteroids, etc.)
-      // ...
+    // Initialize PixiJS
+    const app = new PIXI.Application({
+      width: 800,
+      height: 600,
+      backgroundColor: 0x000000, // Background color
+    });
 
-      // Request the next animation frame
-      requestAnimationFrame(gameLoop);
-    };
+    pixiContainerRef.current.appendChild(app.view);
 
-    // Start the game loop
-    requestAnimationFrame(gameLoop);
+    // Create a container for game objects
+    const gameContainer = new PIXI.Container();
+    app.stage.addChild(gameContainer);
 
-    // Clean up event listeners
+    // Create your game objects, animations, and logic using PIXI.Graphics, PIXI.Sprite, etc.
+    // Example:
+    const player = new PIXI.Graphics();
+    player.beginFill(0xffffff);
+    player.drawRect(0, 0, 50, 50);
+    player.endFill();
+    player.x = 375;
+    player.y = 500;
+
+    gameContainer.addChild(player);
+
+    // Update game logic here
+    app.ticker.add(() => {
+      // Your game logic goes here
+    });
+
+    // Clean up PIXI resources when unmounting
     return () => {
-      // Clean up logic
+      app.destroy(true);
     };
-  }, [shipPosition, bullets, asteroids]);
+  }, []);
 
-  // Function to handle shooting
-  const handleShoot = useCallback(() => {
-    const newBullet = {
-      id: Date.now(),
-      top: 550,
-      left: shipPosition + 22, // Adjust bullet position
-    };
-    setBullets((prevBullets) => [...prevBullets, newBullet]);
-  }, [shipPosition]);
-
-  // Function to handle arrow key controls
-  const handleKeyPress = useCallback((e) => {
-    switch (e.key) {
-      case 'ArrowLeft':
-        setShipDirection(-1);
-        break;
-      case 'ArrowRight':
-        setShipDirection(1);
-        break;
-      case ' ':
-        handleShoot();
-        break;
-      default:
-        break;
-    }
-  }, [handleShoot]);
-
-  useEffect(() => {
-    // Add event listeners for arrow keys and spacebar for shooting
-    window.addEventListener('keydown', handleKeyPress);
-
-    // Clean up event listener
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [handleKeyPress]);
-
-  return (
-    <GameWrapper>
-      <SpaceShip position={shipPosition} direction={shipDirection} />
-      {bullets.map((bullet) => (
-        <Bullet key={bullet.id} {...bullet} />
-      ))}
-      {asteroids.map((asteroid) => (
-        <Asteroid key={asteroid.id} {...asteroid} />
-      ))}
-    </GameWrapper>
-  );
+  return <div ref={pixiContainerRef}></div>;
 };
 
 export default Game;
