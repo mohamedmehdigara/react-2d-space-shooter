@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
 
-const Game = () => {
+const Game = ({ onGameUpdate }) => {
   const pixiContainerRef = useRef(null);
 
   useEffect(() => {
@@ -32,15 +32,27 @@ const Game = () => {
     // Update game logic here
     app.ticker.add(() => {
       // Your game logic goes here
+
+      // Send game objects to the parent component
+      onGameUpdate({
+        player: {
+          x: player.x,
+          y: player.y,
+          width: player.width,
+          height: player.height,
+        },
+        // Other game objects here...
+      });
     });
 
     // Clean up PIXI resources when unmounting
     return () => {
       app.destroy(true);
     };
-  }, []);
+  }, [onGameUpdate]);
 
   return <div ref={pixiContainerRef}></div>;
 };
 
 export default Game;
+
