@@ -1,3 +1,4 @@
+// Game.js
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import SpaceShip from './SpaceShip';
@@ -15,7 +16,7 @@ const GameWrapper = styled.div`
 
 const Game = () => {
   const [shipPosition, setShipPosition] = useState(375);
-  const [shipDirection, setShipDirection] = useState(1); // 1 for right, -1 for left
+  const [shipDirection, setShipDirection] = useState(0); // 0 for not moving, 1 for right, -1 for left
   const [bullets, setBullets] = useState([]);
   const [asteroids, setAsteroids] = useState([]);
 
@@ -26,21 +27,41 @@ const Game = () => {
 
       // Move the spaceship
       setShipPosition((prevPosition) => {
-        let newPosition = prevPosition + 2 * shipDirection; // Adjust speed as needed
+        let newPosition = prevPosition + 1 * shipDirection; // Adjust speed as needed
 
-        // Bounce off the borders
+        // Keep the spaceship within the borders
         if (newPosition < 0) {
           newPosition = 0;
-          setShipDirection(1); // Change direction to right
         } else if (newPosition > 750) {
           newPosition = 750;
-          setShipDirection(-1); // Change direction to left
         }
 
         return newPosition;
       });
 
-      // Clean up logic (remove off-screen bullets or destroyed asteroids)
+      // Check for collisions and handle reactions (e.g., removing hit asteroids)
+      const updatedAsteroids = asteroids.filter((asteroid) => {
+        const asteroidBottom = asteroid.top + 40; // Adjust for asteroid size
+        const asteroidRight = asteroid.left + 40; // Adjust for asteroid size
+
+        const spaceshipBottom = 600; // Adjust for spaceship size
+        const spaceshipRight = shipPosition + 50; // Adjust for spaceship size
+
+        const collided =
+          shipPosition < asteroidRight &&
+          spaceshipRight > asteroid.left &&
+          spaceshipBottom > asteroid.top &&
+          spaceshipBottom < asteroidBottom;
+
+        if (collided) {
+          // Handle collision reaction here (e.g., remove the asteroid)
+          return false;
+        }
+
+        return true; // Keep asteroids that haven't collided
+      });
+
+      setAsteroids(updatedAsteroids);
 
       // Request the next animation frame
       requestAnimationFrame(gameLoop);
@@ -72,7 +93,7 @@ const Game = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [shipPosition, shipDirection]);
+  }, [shipPosition, shipDirection, asteroids]);
 
   const handleShoot = (bulletPosition) => {
     const newBullet = {
@@ -86,11 +107,15 @@ const Game = () => {
   return (
     <GameWrapper>
       <SpaceShip position={shipPosition} />
-      {bullets.map((bullet) => (
+      {bullets && bullets.map((bullet) => (
         <Bullet key={bullet.id} {...bullet} />
       ))}
-      {asteroids.map((asteroid) => (
-        <Asteroid key={asteroid.id} {...asteroid} />
+      {asteroids && asteroids.map((asteroid) => (
+        <Asteroid
+          key={asteroid.id}
+          {...asteroid}
+          onShoot={() => handleShoot(asteroid.left + 20)} // Pass a callback to handle shooting
+        />
       ))}
     </GameWrapper>
   );

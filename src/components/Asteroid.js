@@ -10,10 +10,16 @@ const AsteroidWrapper = styled.div`
   height: 40px;
   background-color: #ff0000;
   border-radius: 50%;
+  cursor: pointer; // Add this to make it clickable
 `;
 
-const Asteroid = ({ top, left }) => {
-  return <AsteroidWrapper top={top} left={left} />;
+const Asteroid = ({ top, left, onShoot }) => {
+  const handleClick = () => {
+    // Call the onShoot function to handle the asteroid being shot
+    onShoot();
+  };
+
+  return <AsteroidWrapper top={top} left={left} onClick={handleClick} />;
 };
 
 export default Asteroid;
