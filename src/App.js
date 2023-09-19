@@ -1,6 +1,3 @@
-// App.js
-// App.js
-
 import React, { Component } from 'react';
 import './App.css';
 import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
@@ -131,32 +128,31 @@ class App extends Component {
      this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
   }
 
-// Inside a function or method where you work with asteroids
- doSomethingWithAsteroid(asteroid) {
-  if (asteroid !== null && typeof asteroid !== 'undefined') {
-    // Access the 'width' property of the asteroid object
-    const asteroidWidth = asteroid.width;
-    // Continue with your logic that uses the 'asteroidWidth' variable
-    console.log('Asteroid width:', asteroidWidth);
-  } else {
-    // Handle the case where 'asteroid' is null or undefined
-    console.error("Asteroid is null or undefined.");
+  // Inside a function or method where you work with asteroids
+  doSomethingWithAsteroid(asteroid) {
+    if (asteroid !== null && typeof asteroid !== 'undefined') {
+      // Access the 'width' property of the asteroid object
+      const asteroidWidth = asteroid.width;
+      // Continue with your logic that uses the 'asteroidWidth' variable
+      console.log('Asteroid width:', asteroidWidth);
+    } else {
+      // Handle the case where 'asteroid' is null or undefined
+      console.error("Asteroid is null or undefined.");
+    }
   }
-}
 
-// Example usage
- someAsteroid = { width: 50 }; // Replace with your actual asteroid object
-
+  // Example usage
+  someAsteroid = { width: 50 }; // Replace with your actual asteroid object
 
   // Start the game
   startGame() {
     // Initialize asteroids (you should have an array of asteroid objects)
-// Initialize asteroids with sample asteroid objects
-this.asteroids = [
-  { x: 100, y: 100, width: 30, height: 30, speed: 2 },
-  { x: 200, y: 200, width: 40, height: 40, speed: 3 },
-  // Add more asteroid objects as needed
-];
+    // Initialize asteroids with sample asteroid objects
+    this.asteroids = [
+      { x: 100, y: 100, width: 30, height: 30, speed: 2 },
+      { x: 200, y: 200, width: 40, height: 40, speed: 3 },
+      // Add more asteroid objects as needed
+    ];
 
     // Start the game loop
     requestAnimationFrame(this.gameLoop);
