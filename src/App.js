@@ -2,7 +2,36 @@
 
 import React, { Component } from 'react';
 import './App.css';
-import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
+import { QuadTree, Rectangle } from './QuadTree';
+
+// Define Asteroid and Bullet classes with getBoundingBox methods
+class Asteroid {
+  constructor(x, y, width, height, speed) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+  }
+
+  getBoundingBox() {
+    return new Rectangle(this.x, this.y, this.width, this.height);
+  }
+}
+
+class Bullet {
+  constructor(x, y, width, height, speed) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+  }
+
+  getBoundingBox() {
+    return new Rectangle(this.x, this.y, this.width, this.height);
+  }
+}
 
 class App extends Component {
   constructor() {
@@ -11,8 +40,7 @@ class App extends Component {
     this.ctx = null;
     this.asteroids = [];
     this.bullets = [];
-    this.quadTree = null; // Initialize the QuadTree
-    this.ship = { x: 0, y: 0, width: 20, height: 20 }; // Initialize the ship object
+    this.quadTree = null;
   }
 
   componentDidMount() {
@@ -38,13 +66,13 @@ class App extends Component {
   handleKeyDown = (event) => {
     if (event.key === ' ') {
       // Spacebar is pressed, create and shoot a bullet
-      const bullet = {
-        x: this.ship.x + this.ship.width / 2,
-        y: this.ship.y,
-        width: 2,
-        height: 5,
-        speed: 5,
-      };
+      const bullet = new Bullet(
+        this.ship.x + this.ship.width / 2,
+        this.ship.y,
+        2,
+        5,
+        5
+      );
       this.bullets.push(bullet);
 
       // Insert the bullet into the QuadTree
@@ -92,9 +120,9 @@ class App extends Component {
   checkCollisions() {
     // Handle collisions between bullets and asteroids
     for (const bullet of this.bullets) {
-      const potentialColliders = this.quadTree.query(bullet);
+      const potentialColliders = this.quadTree.query(bullet.getBoundingBox());
       for (const asteroid of potentialColliders) {
-        if (bullet.intersects(asteroid)) {
+        if (bullet.getBoundingBox().intersects(asteroid.getBoundingBox())) {
           // Handle the collision (e.g., remove bullet and asteroid)
           const bulletIndex = this.bullets.indexOf(bullet);
           if (bulletIndex !== -1) {
