@@ -1,10 +1,20 @@
+// App.js
 import React, { Component } from 'react';
 import './App.css';
 import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
+import Game from './components/Game'; // Import the main game component
+import Score from './components/Score'; // Import the Score component
+import GameOver from './components/GameOver'; // Import the GameOver component
+import Sound from './components/Sound'; // Import the Sound component
 
 class App extends Component {
   constructor() {
     super();
+    this.state = {
+      score: 0,
+      gameStarted: true,
+      gameOver: false,
+    };
     this.canvasRef = React.createRef();
     this.ctx = null;
     this.asteroids = [];
@@ -41,7 +51,7 @@ class App extends Component {
 
   // Handle keydown events (e.g., for shooting bullets)
   handleKeyDown = (event) => {
-    if (event.key === ' ') {
+    if (event.key === ' ' && !this.state.gameOver) {
       // Spacebar is pressed, create and shoot a bullet
       const bullet = {
         x: this.ship.x + this.ship.width / 2,
@@ -59,10 +69,12 @@ class App extends Component {
 
   // Game loop
   gameLoop = () => {
-    this.updateGameObjects();
-    this.checkCollisions();
-    this.drawGameObjects();
-    requestAnimationFrame(this.gameLoop);
+    if (!this.state.gameOver) {
+      this.updateGameObjects();
+      this.checkCollisions();
+      this.drawGameObjects();
+      requestAnimationFrame(this.gameLoop);
+    }
   };
 
   // Update the game objects (e.g., move asteroids, bullets)
@@ -109,9 +121,17 @@ class App extends Component {
           const asteroidIndex = this.asteroids.indexOf(asteroid);
           if (asteroidIndex !== -1) {
             this.asteroids.splice(asteroidIndex, 1);
+            this.setState((prevState) => ({
+              score: prevState.score + 1,
+            }));
           }
         }
       }
+    }
+
+    // Check if the player has lost the game
+    if (this.asteroids.some((asteroid) => asteroid.y + asteroid.height > this.ship.y)) {
+      this.endGame();
     }
   }
 
@@ -134,6 +154,26 @@ class App extends Component {
     // Draw the player's ship
     this.ctx.fillStyle = 'blue';
     this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
+
+    // Draw the score
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = '24px Arial';
+    this.ctx.fillText(`Score: ${this.state.score}`, 20, 30);
+
+    // Check if the game is over
+    if (this.state.gameOver) {
+      this.renderGameOver();
+    }
+  }
+
+  // Render the Game Over component
+  renderGameOver() {
+    return (
+      <GameOver
+        score={this.state.score}
+        onRestart={this.restartGame}
+      />
+    );
   }
 
   // Start the game
@@ -150,8 +190,49 @@ class App extends Component {
     requestAnimationFrame(this.gameLoop);
   }
 
+  // End the game
+  endGame() {
+    this.setState({
+      gameStarted: false,
+      gameOver: true,
+    });
+  }
+
+  // Restart the game
+  restartGame = () => {
+    this.setState({
+      score: 0,
+      gameStarted: true,
+      gameOver: false,
+    });
+
+    // Reset game objects, e.g., asteroids and bullets
+    this.asteroids = [];
+    this.bullets = [];
+
+    // Start the game loop again
+    requestAnimationFrame(this.gameLoop);
+  };
+
   render() {
-    return <canvas ref={this.canvasRef} />;
+    return (
+      <div>
+       <canvas ref={this.canvasRef}></canvas>;
+
+        {this.state.gameStarted ? (
+          <Game
+            canvasRef={this.canvasRef}
+            ship={this.ship}
+            asteroids={this.asteroids}
+            bullets={this.bullets}
+          />
+        ) : (
+          this.renderGameOver()
+        )}
+        <Score score={this.state.score} />
+        <Sound src="background-music.mp3" autoplay loop />
+      </div>
+    );
   }
 }
 
