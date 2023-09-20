@@ -1,8 +1,7 @@
-// App.js
 import React, { Component } from 'react';
 import './App.css';
 import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes
-import Game from './components/Game'; // Import the main game component
+import Game from './components/Game'; // Import the Game component
 import Score from './components/Score'; // Import the Score component
 import GameOver from './components/GameOver'; // Import the GameOver component
 import Sound from './components/Sound'; // Import the Sound component
@@ -11,226 +10,60 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      score: 0,
-      gameStarted: true,
-      gameOver: false,
-    };
-    this.canvasRef = React.createRef();
-    this.ctx = null;
-    this.asteroids = [];
-    this.bullets = [];
-    this.quadTree = null;
-
-    // Define and initialize the ship object
-    this.ship = {
-      x: (window.innerWidth - 30) / 2, // Adjust the initial X position as needed
-      y: window.innerHeight - 40,      // Adjust the initial Y position as needed
-      width: 30,                       // Adjust the ship's width
-      height: 30,                      // Adjust the ship's height
+      gameData: null, // Initialize game data
+      score: 0, // Initialize score
+      isGameOver: false, // Initialize game over state
     };
   }
 
-  componentDidMount() {
-    this.ctx = this.canvasRef.current.getContext('2d');
-    this.canvasRef.current.width = window.innerWidth;
-    this.canvasRef.current.height = window.innerHeight;
-
-    // Initialize the QuadTree with a boundary that covers the entire canvas
-    const boundary = new Rectangle(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
-    this.quadTree = new QuadTree(boundary, 4);
-
-    // Add event listeners and start the game loop
-    this.addEventListeners();
-    this.startGame();
-  }
-
-  // Add event listeners for user input
-  addEventListeners() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  // Handle keydown events (e.g., for shooting bullets)
-  handleKeyDown = (event) => {
-    if (event.key === ' ' && !this.state.gameOver) {
-      // Spacebar is pressed, create and shoot a bullet
-      const bullet = {
-        x: this.ship.x + this.ship.width / 2,
-        y: this.ship.y,
-        width: 2,
-        height: 5,
-        speed: 5,
-      };
-      this.bullets.push(bullet);
-
-      // Insert the bullet into the QuadTree
-      this.quadTree.insert(bullet);
-    }
+  // Define the onGameUpdate function to update game data
+  handleGameUpdate = (gameData) => {
+    this.setState({ gameData });
   };
 
-  // Game loop
-  gameLoop = () => {
-    if (!this.state.gameOver) {
-      this.updateGameObjects();
-      this.checkCollisions();
-      this.drawGameObjects();
-      requestAnimationFrame(this.gameLoop);
-    }
+  // Function to handle increasing the score
+  increaseScore = () => {
+    this.setState((prevState) => ({ score: prevState.score + 1 }));
   };
 
-  // Update the game objects (e.g., move asteroids, bullets)
-  updateGameObjects() {
-    // Update asteroid positions
-    for (const asteroid of this.asteroids) {
-      asteroid.y += asteroid.speed;
-    }
+  // Function to handle game over
+  handleGameOver = () => {
+    this.setState({ isGameOver: true });
+  };
 
-    // Update bullet positions and remove off-screen bullets
-    for (let i = this.bullets.length - 1; i >= 0; i--) {
-      const bullet = this.bullets[i];
-      bullet.y -= bullet.speed;
-
-      // Remove bullets that are off-screen
-      if (bullet.y + bullet.height < 0) {
-        this.bullets.splice(i, 1);
-      }
-    }
-
-    // Update the QuadTree with the current positions of objects
-    this.quadTree = new QuadTree(this.quadTree.boundary, this.quadTree.capacity);
-    for (const bullet of this.bullets) {
-      this.quadTree.insert(bullet);
-    }
-    for (const asteroid of this.asteroids) {
-      this.quadTree.insert(asteroid);
-    }
-  }
-
-  // Check collisions using the QuadTree
-  checkCollisions() {
-    // Handle collisions between bullets and asteroids
-    for (const bullet of this.bullets) {
-      const potentialColliders = this.quadTree.query(bullet);
-      for (const asteroid of potentialColliders) {
-        if (bullet.intersects(asteroid)) {
-          // Handle the collision (e.g., remove bullet and asteroid)
-          const bulletIndex = this.bullets.indexOf(bullet);
-          if (bulletIndex !== -1) {
-            this.bullets.splice(bulletIndex, 1);
-          }
-
-          const asteroidIndex = this.asteroids.indexOf(asteroid);
-          if (asteroidIndex !== -1) {
-            this.asteroids.splice(asteroidIndex, 1);
-            this.setState((prevState) => ({
-              score: prevState.score + 1,
-            }));
-          }
-        }
-      }
-    }
-
-    // Check if the player has lost the game
-    if (this.asteroids.some((asteroid) => asteroid.y + asteroid.height > this.ship.y)) {
-      this.endGame();
-    }
-  }
-
-  // Draw game objects on the canvas
-  drawGameObjects() {
-    this.ctx.clearRect(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
-
-    // Draw asteroids
-    for (const asteroid of this.asteroids) {
-      this.ctx.fillStyle = 'gray';
-      this.ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
-    }
-
-    // Draw bullets
-    this.ctx.fillStyle = 'red';
-    for (const bullet of this.bullets) {
-      this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    }
-
-    // Draw the player's ship
-    this.ctx.fillStyle = 'blue';
-    this.ctx.fillRect(this.ship.x, this.ship.y, this.ship.width, this.ship.height);
-
-    // Draw the score
-    this.ctx.fillStyle = 'white';
-    this.ctx.font = '24px Arial';
-    this.ctx.fillText(`Score: ${this.state.score}`, 20, 30);
-
-    // Check if the game is over
-    if (this.state.gameOver) {
-      this.renderGameOver();
-    }
-  }
-
-  // Render the Game Over component
-  renderGameOver() {
-    return (
-      <GameOver
-        score={this.state.score}
-        onRestart={this.restartGame}
-      />
-    );
-  }
-
-  // Start the game
-  startGame() {
-    // Initialize asteroids (you should have an array of asteroid objects)
-    // Initialize asteroids with sample asteroid objects
-    this.asteroids = [
-      { x: 100, y: 100, width: 30, height: 30, speed: 2 },
-      { x: 200, y: 200, width: 40, height: 40, speed: 3 },
-      // Add more asteroid objects as needed
-    ];
-
-    // Start the game loop
-    requestAnimationFrame(this.gameLoop);
-  }
-
-  // End the game
-  endGame() {
-    this.setState({
-      gameStarted: false,
-      gameOver: true,
-    });
-  }
-
-  // Restart the game
+  // Function to restart the game
   restartGame = () => {
     this.setState({
       score: 0,
-      gameStarted: true,
-      gameOver: false,
+      isGameOver: false,
     });
-
-    // Reset game objects, e.g., asteroids and bullets
-    this.asteroids = [];
-    this.bullets = [];
-
-    // Start the game loop again
-    requestAnimationFrame(this.gameLoop);
   };
 
   render() {
-    return (
-      <div>
-       <canvas ref={this.canvasRef}></canvas>;
+    const { score, isGameOver } = this.state;
 
-        {this.state.gameStarted ? (
-          <Game
-            canvasRef={this.canvasRef}
-            ship={this.ship}
-            asteroids={this.asteroids}
-            bullets={this.bullets}
-          />
-        ) : (
-          this.renderGameOver()
-        )}
-        <Score score={this.state.score} />
-        <Sound src="background-music.mp3" autoplay loop />
+    return (
+      <div className="App">
+        <h1>Space Shooter Game</h1>
+
+        {/* Render the Game component and pass onGameUpdate as a prop */}
+        <Game
+          onGameUpdate={this.handleGameUpdate}
+          onIncreaseScore={this.increaseScore}
+          onGameOver={this.handleGameOver}
+          isGameOver={isGameOver}
+        />
+
+        {/* Render the Score component and pass the score */}
+        <Score score={score} />
+
+        {/* Render the GameOver component when the game is over */}
+        {isGameOver && <GameOver score={score} onRestart={this.restartGame} />}
+
+        {/* Render other components such as Sound, Settings, etc. */}
+        <Sound />
+
+        {/* Add any additional components here */}
       </div>
     );
   }
