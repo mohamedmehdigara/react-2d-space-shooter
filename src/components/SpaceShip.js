@@ -2,7 +2,6 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 // Import spaceship image
-import spaceshipImage from './spaceship.png';
 
 const swingAnimation = keyframes`
   0% {
@@ -20,7 +19,6 @@ const SpaceShipWrapper = styled.div`
   position: absolute;
   width: 50px;
   height: 50px;
-  background-image: url('${spaceshipImage}');
   background-size: cover;
   transform-origin: center bottom;
   animation: ${swingAnimation} 2s infinite alternate;
