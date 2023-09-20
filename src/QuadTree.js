@@ -1,15 +1,15 @@
 // QuadTree.js
 
-// QuadTree.js
-
+// Rectangle class represents a rectangular boundary
 class Rectangle {
   constructor(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+    this.x = x;         // X-coordinate of the top-left corner
+    this.y = y;         // Y-coordinate of the top-left corner
+    this.width = width; // Width of the rectangle
+    this.height = height; // Height of the rectangle
   }
 
+  // Check if the rectangle contains a point
   contains(point) {
     return (
       point.x >= this.x &&
@@ -19,6 +19,7 @@ class Rectangle {
     );
   }
 
+  // Check if the rectangle intersects with another rectangle (range)
   intersects(range) {
     return !(
       range.x + range.width < this.x ||
@@ -29,12 +30,13 @@ class Rectangle {
   }
 }
 
+// QuadTree class represents a QuadTree data structure for efficient collision detection
 class QuadTree {
   constructor(boundary, capacity) {
-    this.boundary = boundary; // Rectangle
-    this.capacity = capacity; // Maximum objects in a quadrant
-    this.objects = []; // Array of game objects
-    this.divided = false; // Is the tree divided into quadrants?
+    this.boundary = boundary; // Rectangle representing the boundary of this node
+    this.capacity = capacity; // Maximum objects in a quadrant before subdivision
+    this.objects = [];        // Array of game objects in this quadrant
+    this.divided = false;     // Indicates if the tree is divided into quadrants
   }
 
   // Subdivide the quadtree into four quadrants

@@ -1,7 +1,3 @@
-// App.js
-
-// App.js
-
 import React, { Component } from 'react';
 import './App.css';
 import { QuadTree, Rectangle } from './QuadTree'; // Import the QuadTree and Rectangle classes

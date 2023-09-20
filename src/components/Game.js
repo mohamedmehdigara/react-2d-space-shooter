@@ -1,8 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 
 const Game = ({ onGameUpdate }) => {
   const pixiContainerRef = useRef(null);
+  const [gameState, setGameState] = useState({
+    player: {
+      x: 375,
+      y: 500,
+      width: 50,
+      height: 50,
+    },
+    // Initialize other game objects here...
+  });
 
   useEffect(() => {
     // Initialize PixiJS
@@ -24,32 +33,41 @@ const Game = ({ onGameUpdate }) => {
     player.beginFill(0xffffff);
     player.drawRect(0, 0, 50, 50);
     player.endFill();
-    player.x = 375;
-    player.y = 500;
+    player.x = gameState.player.x;
+    player.y = gameState.player.y;
 
     gameContainer.addChild(player);
 
-    // Update game logic here
-    app.ticker.add(() => {
+    // Custom game loop
+    const updateGame = () => {
       // Your game logic goes here
 
-      // Send game objects to the parent component
-      onGameUpdate({
+      // Update player position in game state
+      setGameState((prevState) => ({
+        ...prevState,
         player: {
+          ...prevState.player,
           x: player.x,
           y: player.y,
-          width: player.width,
-          height: player.height,
         },
-        // Other game objects here...
-      });
-    });
+        // Update other game objects here...
+      }));
+
+      // Send game state to the parent component
+      onGameUpdate(gameState);
+
+      // Continue game loop
+      requestAnimationFrame(updateGame);
+    };
+
+    // Start the game loop
+    requestAnimationFrame(updateGame);
 
     // Clean up PIXI resources when unmounting
     return () => {
       app.destroy(true);
     };
-  }, [onGameUpdate]);
+  }, [onGameUpdate, gameState]);
 
   return <div ref={pixiContainerRef}></div>;
 };

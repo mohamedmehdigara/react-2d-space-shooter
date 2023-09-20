@@ -1,4 +1,3 @@
-// Enemy.js
 import React from 'react';
 import Asteroid from './Asteroid'; // Import your Asteroid component
 
@@ -12,4 +11,4 @@ const Enemy = ({ asteroids }) => {
   );
 };
 
-export default Enemy;
+export default React.memo(Enemy); // Use React.memo for performance optimization
