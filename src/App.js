@@ -9,6 +9,8 @@ import AsteroidTypes from './components/AsteroidTypes'; // Import the AsteroidTy
 import SmallAsteroid from './components/SmallAsteroid'; // Import the SmallAsteroid component
 import MediumAsteroid from './components/MediumAsteroid'; // Import the MediumAsteroid component
 import LargeAsteroid from './components/LargeAsteroid'; // Import the LargeAsteroid component
+import Scoreboard from './components/Scoreboard'; // Import the Scoreboard component
+
 
 class App extends Component {
   constructor() {
@@ -18,6 +20,9 @@ class App extends Component {
     this.asteroids = [];
     this.bullets = [];
     this.quadTree = null;
+    this.state = {
+      score: 0, // Initialize score with a default value
+    };
 
     // Define and initialize the ship object
     this.ship = {
@@ -214,12 +219,22 @@ class App extends Component {
     }
   }
 
+  updateScore = (points) => {
+    this.setState((prevState) => ({
+      score: prevState.score + points,
+    }));
+  };
+
   render() {
+    const { score } = this.state; // Destructure score from state
+
     return (
       <div>
         <canvas ref={this.canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
         <Player ship={this.ship} />
         <Enemy asteroids={this.asteroids} />
+        <Scoreboard score={this.state.score} />
+
       </div>
     );
   }
