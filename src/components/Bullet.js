@@ -1,25 +1,21 @@
-import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { Component } from 'react';
 
-const moveBullet = keyframes`
-  from {
-    transform: translateY(0);
+class Bullet extends Component {
+  render() {
+    return (
+      <div
+        className="Bullet"
+        style={{
+          position: 'absolute',
+          width: '5px',
+          height: '20px',
+          backgroundColor: '#00ff00',
+          left: `${this.props.x}px`,
+          top: `${this.props.y}px`,
+        }}
+      ></div>
+    );
   }
-  to {
-    transform: translateY(-100%);
-  }
-`;
-
-const BulletWrapper = styled.div`
-  position: absolute;
-  width: 10px;
-  height: 30px;
-  background-color: #ff9900;
-  animation: ${moveBullet} ${(props) => props.speed}s linear infinite;
-`;
-
-const Bullet = ({ top, left, speed }) => {
-  return <BulletWrapper style={{ top, left }} speed={speed} />;
-};
+}
 
 export default Bullet;
