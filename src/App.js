@@ -15,57 +15,150 @@ import SpaceShip from "./components/SpaceShip";
 import Bullet from './components/Bullet';
 import Asteroid from './components/Asteroid';
 
+
 class App extends Component {
   constructor() {
     super();
     this.canvasRef = React.createRef();
     this.ctx = null;
-    this.asteroids = []; // Initialize asteroids as an empty array
-    this.bullets = []; // Initialize bullets as an empty array
+    this.asteroids = [];
+    this.bullets = [];
     this.quadTree = null;
     this.score = 0;
-    this.addEventListeners = this.addEventListeners.bind(this); // Bind this to the method
-
-  
-    // Define and initialize the ship object
-    this.ship = {
+    this.health = 100;
+    this.playerPosition = {
       x: (window.innerWidth - 30) / 2,
       y: window.innerHeight - 40,
       width: 30,
       height: 30,
     };
   }
-  
-  startGame() {
-    // Initialize asteroids (you should have an array of asteroid objects)
-    // Initialize asteroids with sample asteroid objects
-    this.asteroids = [
-      { x: 100, y: 100, width: 30, height: 30, speed: 2 },
-      { x: 200, y: 200, width: 40, height: 40, speed: 3 },
-      // Add more asteroid objects as needed
-    ];
 
-    // Start the game loop
-    requestAnimationFrame(this.gameLoop);
+  componentDidMount() {
+    this.ctx = this.canvasRef.current.getContext('2d');
+    this.canvasRef.current.width = window.innerWidth;
+    this.canvasRef.current.height = window.innerHeight;
+
+    const boundary = new Rectangle(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
+    this.quadTree = new QuadTree(boundary, 4);
+
+    this.addEventListeners();
+    this.startGame();
+    this.spawnAsteroids();
+    this.gameLoop();
   }
 
-  // Add collision detection logic here
+  addEventListeners() {
+    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  handleKeyDown = (event) => {
+    const speed = 5;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        this.movePlayer('left', speed);
+        break;
+      case 'ArrowRight':
+        this.movePlayer('right', speed);
+        break;
+      case 'ArrowUp':
+        this.movePlayer('up', speed);
+        break;
+      case 'ArrowDown':
+        this.movePlayer('down', speed);
+        break;
+      case ' ':
+        this.shootBullet();
+        break;
+      default:
+        break;
+    }
+  };
+
+  handleKeyUp = (event) => {
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 'ArrowUp':
+      case 'ArrowDown':
+        this.stopPlayer();
+        break;
+      default:
+        break;
+    }
+  };
+
+  handleResize = () => {
+    this.canvasRef.current.width = window.innerWidth;
+    this.canvasRef.current.height = window.innerHeight;
+  };
+
+  movePlayer(direction, speed) {
+    const { playerPosition } = this.state;
+    switch (direction) {
+      case 'left':
+        this.setState({ playerPosition: { ...playerPosition, x: playerPosition.x - speed } });
+        break;
+      case 'right':
+        this.setState({ playerPosition: { ...playerPosition, x: playerPosition.x + speed } });
+        break;
+      case 'up':
+        this.setState({ playerPosition: { ...playerPosition, y: playerPosition.y - speed } });
+        break;
+      case 'down':
+        this.setState({ playerPosition: { ...playerPosition, y: playerPosition.y + speed } });
+        break;
+      default:
+        break;
+    }
+  }
+
+  stopPlayer() {
+    // Implement stopping player movement
+  }
+
+  shootBullet() {
+    const { playerPosition } = this.state;
+    const bullet = {
+      x: playerPosition.x + playerPosition.width / 2,
+      y: playerPosition.y,
+      width: 5,
+      height: 20,
+    };
+    this.setState((prevState) => ({ bullets: [...prevState.bullets, bullet] }));
+  }
+
+  spawnAsteroids() {
+    setInterval(() => {
+      const asteroid = {
+        x: Math.random() * window.innerWidth,
+        y: 0,
+        width: 40,
+        height: 40,
+        speed: 2,
+      };
+      this.setState((prevState) => ({ asteroids: [...prevState.asteroids, asteroid] }));
+    }, 2000);
+  }
+
   checkCollisions() {
-    const { playerX, playerY, bullets, asteroids } = this.state;
+    const { playerPosition, bullets, asteroids } = this.state;
     const updatedAsteroids = [...asteroids];
     const updatedBullets = [];
 
     for (const bullet of bullets) {
       const bulletBoundingBox = bullet.getBoundingBox();
 
-      // Check collisions with asteroids
       for (let i = updatedAsteroids.length - 1; i >= 0; i--) {
         const asteroid = updatedAsteroids[i];
         const asteroidBoundingBox = asteroid.getBoundingBox();
 
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
-          // Collision detected, remove the bullet and asteroid
           updatedAsteroids.splice(i, 1);
+          this.setState((prevState) => ({ score: prevState.score + 1 }));
         } else {
           updatedBullets.push(bullet);
         }
@@ -76,6 +169,16 @@ class App extends Component {
       asteroids: updatedAsteroids,
       bullets: updatedBullets,
     });
+
+    // Check collisions with player and decrement health
+    for (const asteroid of updatedAsteroids) {
+      const playerBoundingBox = playerPosition;
+      const asteroidBoundingBox = asteroid.getBoundingBox();
+
+      if (this.isCollision(playerBoundingBox, asteroidBoundingBox)) {
+        this.setState((prevState) => ({ health: prevState.health - 10 }));
+      }
+    }
   }
 
   isCollision(rect1, rect2) {
@@ -87,169 +190,93 @@ class App extends Component {
     );
   }
 
-  // Update player position based on keyboard input
-  handleKeyDown = (event) => {
-    const { playerX, playerY } = this.state;
-    const speed = 5; // Adjust player speed as needed
+  updateBullets() {
+    const { bullets } = this.state;
+    const updatedBullets = [];
 
-    switch (event.key) {
-      case 'ArrowLeft':
-        this.setState({ playerX: playerX - speed });
-        break;
-      case 'ArrowRight':
-        this.setState({ playerX: playerX + speed });
-        break;
-      case 'ArrowUp':
-        this.setState({ playerY: playerY - speed });
-        break;
-      case 'ArrowDown':
-        this.setState({ playerY: playerY + speed });
-        break;
-      case ' ':
-        // Spacebar is pressed, create and shoot a bullet
-        const bullet = {
-          x: playerX + 12, // Adjust the bullet's X position as needed
-          y: playerY,
-        };
-        this.setState((prevState) => ({ bullets: [...prevState.bullets, bullet] }));
-        break;
-      default:
-        break;
+    for (const bullet of bullets) {
+      bullet.y -= 10; // Adjust bullet speed as needed
+
+      // Remove bullets that are off-screen
+      if (bullet.y + bullet.height > 0) {
+        updatedBullets.push(bullet);
+      }
     }
-  };
 
-  // Update game logic here (e.g., handle collisions)
-  componentDidMount() {
-    this.ctx = this.canvasRef.current.getContext('2d');
-    this.canvasRef.current.width = window.innerWidth;
-    this.canvasRef.current.height = window.innerHeight;
-  
-    // Initialize the QuadTree with a boundary that covers the entire canvas
-    const boundary = new Rectangle(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
-    this.quadTree = new QuadTree(boundary, 4);
-  
-    // Add event listeners and start the game loop
-    this.addEventListeners();
-    this.startGame();
+    this.setState({ bullets: updatedBullets });
   }
 
-  addEventListeners() {
-    // Add event listener for keyboard controls
-    window.addEventListener('keydown', this.handleKeyDown);
-    window.addEventListener('keyup', this.handleKeyUp);
-  
-    // Add event listener for mouse or touch controls
-    this.canvasRef.current.addEventListener('mousemove', this.handleMouseMove);
-    this.canvasRef.current.addEventListener('mousedown', this.handleMouseDown);
-    this.canvasRef.current.addEventListener('mouseup', this.handleMouseUp);
-    
-    // Add event listener for window resize
-    window.addEventListener('resize', this.handleResize);
-  }
-  
-  // Keyboard controls
-  handleKeyDown(event) {
-    // Handle key presses
-    switch (event.key) {
-      case 'ArrowLeft':
-        // Move the spaceship left
-        this.moveSpaceship('left');
-        break;
-      case 'ArrowRight':
-        // Move the spaceship right
-        this.moveSpaceship('right');
-        break;
-      case 'ArrowUp':
-        // Move the spaceship up
-        this.moveSpaceship('up');
-        break;
-      case 'ArrowDown':
-        // Move the spaceship down
-        this.moveSpaceship('down');
-        break;
-      case ' ':
-        // Fire a bullet
-        this.fireBullet();
-        break;
-      // Add more controls as needed
+  updateAsteroids() {
+    const { asteroids } = this.state;
+    const updatedAsteroids = [];
+
+    for (const asteroid of asteroids) {
+      asteroid.y += asteroid.speed; // Move asteroids downward
+
+      // Remove asteroids that are off-screen
+      if (asteroid.y - asteroid.height < window.innerHeight) {
+        updatedAsteroids.push(asteroid);
+      }
     }
+
+    this.setState({ asteroids: updatedAsteroids });
   }
-  
-  handleKeyUp(event) {
-    // Handle key releases (e.g., stop spaceship movement)
-    switch (event.key) {
-      case 'ArrowLeft':
-      case 'ArrowRight':
-      case 'ArrowUp':
-      case 'ArrowDown':
-        // Stop spaceship movement in the corresponding direction
-        this.stopSpaceship();
-        break;
-      // Add more key release actions if necessary
-    }
-  }
-  
-  // Mouse and touch controls
-  handleMouseMove(event) {
-    // Update spaceship position based on mouse/touch movement
-    const mouseX = event.clientX - this.canvasRef.current.getBoundingClientRect().left;
-    const mouseY = event.clientY - this.canvasRef.current.getBoundingClientRect().top;
-    this.moveSpaceshipTo(mouseX, mouseY);
-  }
-  
-  handleMouseDown(event) {
-    // Handle mouse click or touch start
-    // Example: Fire a bullet when the player clicks/taps
-    this.fireBullet();
-  }
-  
-  handleMouseUp(event) {
-    // Handle mouse release or touch end
-    // Example: Stop firing bullets when the player releases the click/tap
-    this.stopFiring();
-  }
-  
-  // Window resize event
-  handleResize() {
-    // Adjust the canvas size and update game logic for new dimensions
+
+  drawGame() {
+    const { playerPosition, bullets, asteroids, score, health } = this.state;
     const canvas = this.canvasRef.current;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    // Add logic to reposition game objects, if needed
-  }
-  
-  // Function to spawn asteroids periodically
-  spawnAsteroids() {
-    setInterval(() => {
-      const asteroid = {
-        x: Math.random() * window.innerWidth,
-        y: 0,
-        width: 40,
-        height: 40,
-        speed: 2,
-      };
-      this.setState((prevState) => ({ asteroids: [...prevState.asteroids, asteroid] }));
-    }, 2000); // Adjust the interval as needed
+    const ctx = canvas.getContext('2d');
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw player
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(playerPosition.x, playerPosition.y, playerPosition.width, playerPosition.height);
+
+    // Draw bullets
+    ctx.fillStyle = 'red';
+    for (const bullet of bullets) {
+      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    }
+
+    // Draw asteroids
+    ctx.fillStyle = 'gray';
+    for (const asteroid of asteroids) {
+      ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+    }
+
+    // Draw scoreboard
+    ctx.fillStyle = 'white';
+    ctx.font = '24px Arial';
+    ctx.fillText(`Score: ${score}`, 20, 30);
+
+    // Draw health bar
+    ctx.fillStyle = 'red';
+    ctx.fillRect(20, 40, health * 2, 20);
   }
 
-  // Render the game components
+  gameLoop() {
+    this.checkCollisions();
+    this.updateBullets();
+    this.updateAsteroids();
+    this.drawGame();
+    requestAnimationFrame(() => this.gameLoop());
+  }
+
   render() {
     return (
       <div className="App">
         <canvas ref={this.canvasRef}></canvas>
-        <Player
-          position={this.ship}
-          onFire={this.handleFire}
-          onMove={this.handleMove}
-        />
-        {this.asteroids.map((asteroid, index) => (
+        <Player position={this.playerPosition} />
+        {this.state.asteroid.map((asteroid, index) => (
           <Asteroid
             key={index}
             top={asteroid.y}
             left={asteroid.x}
           />
         ))}
-        {this.bullets.map((bullet, index) => (
+        {this.state.bullets.map((bullet, index) => (
           <Bullet
             key={index}
             x={bullet.x}
