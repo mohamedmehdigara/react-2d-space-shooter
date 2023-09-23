@@ -1,33 +1,20 @@
-import React from 'react';
-import styled, { keyframes } from 'styled-components';
-
-// Import spaceship image
-
-const swingAnimation = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
-`;
+import React, { Component } from 'react';
+import styled from 'styled-components';
 
 const SpaceShipWrapper = styled.div`
   position: absolute;
   width: 50px;
   height: 50px;
-  background-size: cover;
-  transform-origin: center bottom;
-  animation: ${swingAnimation} 2s infinite alternate;
-
-  /* Add more styles for details, if needed */
+  background-color: #ffffff;
+  transform-origin: center bottom; // Set pivot point to ship's bottom center
+  animation: swing 2s infinite alternate; // Add swinging animation
 `;
 
-const SpaceShip = ({ position }) => {
-  return <SpaceShipWrapper style={{ left: position }} />;
-};
+class SpaceShip extends Component {
+  render() {
+    const { position } = this.props;
+    return <SpaceShipWrapper style={{ left: position.x, top: position.y }} />;
+  }
+}
 
 export default SpaceShip;
