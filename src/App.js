@@ -10,7 +10,9 @@ import SmallAsteroid from './components/SmallAsteroid'; // Import the SmallAster
 import MediumAsteroid from './components/MediumAsteroid'; // Import the MediumAsteroid component
 import LargeAsteroid from './components/LargeAsteroid'; // Import the LargeAsteroid component
 import Scoreboard from './components/Scoreboard'; // Import the Scoreboard component
-
+import HealthBar from './components/HealthBar';
+import SpaceShip from "./components/SpaceShip";
+import Bullet from './components/Bullet';
 
 class App extends Component {
   constructor() {
@@ -22,6 +24,10 @@ class App extends Component {
     this.quadTree = null;
     this.state = {
       score: 0, // Initialize score with a default value
+      playerHealth: 100,
+      playerX: (window.innerWidth - 30) / 2, // Initial player X position
+      playerY: window.innerHeight - 40, // Initial player Y position
+      bullets: []
     };
 
     // Define and initialize the ship object
@@ -35,6 +41,8 @@ class App extends Component {
     // Track the game level
     this.level = 1;
   }
+
+
 
   componentDidMount() {
     this.ctx = this.canvasRef.current.getContext('2d');
@@ -62,21 +70,35 @@ class App extends Component {
 
   // Handle keydown events (e.g., for shooting bullets)
   handleKeyDown = (event) => {
-    if (event.key === ' ') {
-      // Spacebar is pressed, create and shoot a bullet
-      const bullet = {
-        x: this.ship.x + this.ship.width / 2,
-        y: this.ship.y,
-        width: 2,
-        height: 5,
-        speed: 5,
-      };
-      this.bullets.push(bullet);
+    const { playerX, playerY } = this.state;
+    const speed = 5; // Adjust player speed as needed
 
-      // Insert the bullet into the QuadTree
-      this.quadTree.insert(bullet);
+    switch (event.key) {
+      case 'ArrowLeft':
+        this.setState({ playerX: playerX - speed });
+        break;
+      case 'ArrowRight':
+        this.setState({ playerX: playerX + speed });
+        break;
+      case 'ArrowUp':
+        this.setState({ playerY: playerY - speed });
+        break;
+      case 'ArrowDown':
+        this.setState({ playerY: playerY + speed });
+        break;
+      case ' ':
+        // Spacebar is pressed, create and shoot a bullet
+        const bullet = {
+          x: playerX + 12, // Adjust the bullet's X position as needed
+          y: playerY,
+        };
+        this.setState((prevState) => ({ bullets: [...prevState.bullets, bullet] }));
+        break;
+      default:
+        break;
     }
   };
+     
 
   // Game loop
   gameLoop = () => {
@@ -227,6 +249,8 @@ class App extends Component {
 
   render() {
     const { score } = this.state; // Destructure score from state
+    const { playerHealth, playerX, playerY, bullets } = this.state;
+
 
     return (
       <div>
@@ -234,6 +258,12 @@ class App extends Component {
         <Player ship={this.ship} />
         <Enemy asteroids={this.asteroids} />
         <Scoreboard score={this.state.score} />
+        <HealthBar health={this.state.playerHealth} maxHealth={100} />
+        <SpaceShip position={{ x: playerX, y: playerY }} />
+        {bullets.map((bullet, index) => (
+          <Bullet key={index} x={bullet.x} y={bullet.y} />
+        ))}
+
 
       </div>
     );

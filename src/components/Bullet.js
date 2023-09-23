@@ -1,6 +1,16 @@
 import React, { Component } from 'react';
 
 class Bullet extends Component {
+  // Add a getBoundingBox method to Bullet
+  getBoundingBox() {
+    return {
+      x: this.props.x,
+      y: this.props.y,
+      width: 5,  // Set the width of the bounding box
+      height: 20, // Set the height of the bounding box
+    };
+  }
+
   render() {
     return (
       <div

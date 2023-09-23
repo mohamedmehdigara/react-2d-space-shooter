@@ -1,24 +1,31 @@
-import React from 'react';
-import styled from 'styled-components';
+import React, { Component } from 'react';
 
-const AsteroidWrapper = styled.div`
-  position: absolute;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
-  background-color: ${(props) => props.color};
-  animation: rotation ${(props) => props.rotationDuration}s linear infinite;
-`;
+class Asteroid extends Component {
+  // Add a getBoundingBox method to Asteroid
+  getBoundingBox() {
+    return {
+      x: this.props.left,
+      y: this.props.top,
+      width: 40, // Set the width of the bounding box
+      height: 40, // Set the height of the bounding box
+    };
+  }
 
-const Asteroid = ({ top, left, width, height, color, rotationDuration }) => {
-  return (
-    <AsteroidWrapper
-      style={{ top, left }}
-      width={width}
-      height={height}
-      color={color}
-      rotationDuration={rotationDuration}
-    />
-  );
-};
+  render() {
+    return (
+      <div
+        className="Asteroid"
+        style={{
+          position: 'absolute',
+          width: '40px',
+          height: '40px',
+          backgroundColor: '#ff0000',
+          top: `${this.props.top}px`,
+          left: `${this.props.left}px`,
+        }}
+      ></div>
+    );
+  }
+}
 
 export default Asteroid;
