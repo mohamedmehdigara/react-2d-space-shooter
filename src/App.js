@@ -31,7 +31,7 @@ class App extends Component {
       shipWidth: 30,
       shipHeight: 30,
     };
-  
+    
     // Bind event handlers to this instance
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
