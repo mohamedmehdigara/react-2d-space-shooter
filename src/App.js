@@ -21,18 +21,26 @@ class App extends Component {
     super();
     this.canvasRef = React.createRef();
     this.ctx = null;
-    this.asteroids = [];
-    this.bullets = [];
-    this.quadTree = null;
-    this.score = 0;
-    this.health = 100;
-    this.playerPosition = {
-      x: (window.innerWidth - 30) / 2,
-      y: window.innerHeight - 40,
-      width: 30,
-      height: 30,
+    this.state = {
+      asteroids: [], // Initialize asteroids as an empty array
+      bullets: [], // Initialize bullets as an empty array
+      quadTree: null,
+      score: 0,
+      playerX: (window.innerWidth - 30) / 2,
+      playerY: window.innerHeight - 40,
+      shipWidth: 30,
+      shipHeight: 30,
     };
+  
+    // Bind event handlers to this instance
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseDown = this.handleMouseDown.bind(this);
+    this.handleMouseUp = this.handleMouseUp.bind(this);
+    this.handleResize = this.handleResize.bind(this);
   }
+  
 
   componentDidMount() {
     this.ctx = this.canvasRef.current.getContext('2d');
@@ -269,13 +277,14 @@ class App extends Component {
       <div className="App">
         <canvas ref={this.canvasRef}></canvas>
         <Player position={this.playerPosition} />
-        {this.state.asteroid.map((asteroid, index) => (
-          <Asteroid
-            key={index}
-            top={asteroid.y}
-            left={asteroid.x}
-          />
-        ))}
+        {this.state.asteroids.map((asteroid, index) => (
+  <Asteroid
+    key={index}
+    top={asteroid.y}
+    left={asteroid.x}
+  />
+))}
+
         {this.state.bullets.map((bullet, index) => (
           <Bullet
             key={index}
