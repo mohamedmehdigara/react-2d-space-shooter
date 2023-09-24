@@ -214,21 +214,20 @@ class App extends Component {
     }, 2000);
   }
 
-
   checkCollisions() {
-    const { playerPosition, bullets, asteroids } = this.state;
+    const { playerPosition, bullets, asteroids, enemies } = this.state;
     const updatedAsteroids = [...asteroids];
     const updatedEnemies = [...enemies]; // Clone the enemies array
-
+  
     const updatedBullets = [];
-
+  
     for (const bullet of bullets) {
       const bulletBoundingBox = bullet.getBoundingBox();
-
+  
       for (let i = updatedAsteroids.length - 1; i >= 0; i--) {
         const asteroid = updatedAsteroids[i];
         const asteroidBoundingBox = asteroid.getBoundingBox();
-
+  
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
           updatedAsteroids.splice(i, 1);
           this.setState((prevState) => ({ score: prevState.score + 1 }));
@@ -237,24 +236,24 @@ class App extends Component {
         }
       }
     }
-
+  
     this.setState({
       asteroids: updatedAsteroids,
       bullets: updatedBullets,
       enemies: updatedEnemies, // Update enemies array
-
     });
-
+  
     // Check collisions with player and decrement health
     for (const asteroid of updatedAsteroids) {
       const playerBoundingBox = playerPosition;
       const asteroidBoundingBox = asteroid.getBoundingBox();
-
+  
       if (this.isCollision(playerBoundingBox, asteroidBoundingBox)) {
         this.setState((prevState) => ({ health: prevState.health - 10 }));
       }
     }
   }
+  
 
   isCollision(rect1, rect2) {
     return (
