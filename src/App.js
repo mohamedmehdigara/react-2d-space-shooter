@@ -30,14 +30,20 @@ class App extends Component {
       playerY: window.innerHeight - 40,
       shipWidth: 30,
       shipHeight: 30,
+      playerPosition: {
+        x: (window.innerWidth - 30) / 2,
+        y: window.innerHeight - 40,
+        width: 30,
+        height: 30,
+      },
+      health: 100, // Initial health value
+    
     };
     
     // Bind event handlers to this instance
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.handleMouseUp = this.handleMouseUp.bind(this);
+   
     this.handleResize = this.handleResize.bind(this);
   }
   
@@ -56,6 +62,39 @@ class App extends Component {
     this.gameLoop();
   }
 
+  startGame() {
+    // Initialize the game state
+    this.setState({
+      asteroids: [],
+      bullets: [],
+      quadTree: null,
+      score: 0,
+      playerX: (window.innerWidth - 30) / 2,
+      playerY: window.innerHeight - 40,
+      shipWidth: 30,
+      shipHeight: 30,
+    });
+
+    // Set up the canvas and quad tree
+    this.ctx = this.canvasRef.current.getContext('2d');
+    this.canvasRef.current.width = window.innerWidth;
+    this.canvasRef.current.height = window.innerHeight;
+
+    const boundary = new Rectangle(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
+    this.quadTree = new QuadTree(boundary, 4);
+
+    // Add event listeners
+    this.addEventListeners();
+
+    // Start spawning asteroids
+    this.spawnAsteroids();
+
+    // Start the game loop
+    this.gameLoop();
+  }
+
+
+
   addEventListeners() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
@@ -64,7 +103,7 @@ class App extends Component {
 
   handleKeyDown = (event) => {
     const speed = 5;
-
+  
     switch (event.key) {
       case 'ArrowLeft':
         this.movePlayer('left', speed);
@@ -82,10 +121,11 @@ class App extends Component {
         this.shootBullet();
         break;
       default:
+        this.stopPlayer(); // Stop player movement for other keys
         break;
     }
   };
-
+  
   handleKeyUp = (event) => {
     switch (event.key) {
       case 'ArrowLeft':
@@ -125,8 +165,13 @@ class App extends Component {
   }
 
   stopPlayer() {
-    // Implement stopping player movement
+    // Set player movement speed to 0 to stop the player
+    this.setState({
+      playerXSpeed: 0,
+      playerYSpeed: 0,
+    });
   }
+  
 
   shootBullet() {
     const { playerPosition } = this.state;
@@ -276,7 +321,7 @@ class App extends Component {
     return (
       <div className="App">
         <canvas ref={this.canvasRef}></canvas>
-        <Player position={this.playerPosition} />
+        <Player position={this.state.playerPosition} />
         {this.state.asteroids.map((asteroid, index) => (
   <Asteroid
     key={index}
