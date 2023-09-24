@@ -22,6 +22,8 @@ class App extends Component {
     this.canvasRef = React.createRef();
     this.ctx = null;
     this.state = {
+      enemies: [], // Initialize enemies as an empty array
+
       asteroids: [], // Initialize asteroids as an empty array
       bullets: [], // Initialize bullets as an empty array
       quadTree: null,
@@ -58,7 +60,7 @@ class App extends Component {
 
     this.addEventListeners();
     this.startGame();
-    this.spawnAsteroids();
+    this.spawnAsteroidsAndEnemies(); // Updated function
     this.gameLoop();
   }
 
@@ -66,6 +68,7 @@ class App extends Component {
     // Initialize the game state
     this.setState({
       asteroids: [],
+      enemies: [],
       bullets: [],
       quadTree: null,
       score: 0,
@@ -87,7 +90,7 @@ class App extends Component {
     this.addEventListeners();
 
     // Start spawning asteroids
-    this.spawnAsteroids();
+    this.spawnAsteroidsAndEnemies(); // Updated function
 
     // Start the game loop
     this.gameLoop();
@@ -184,8 +187,9 @@ class App extends Component {
     this.setState((prevState) => ({ bullets: [...prevState.bullets, bullet] }));
   }
 
-  spawnAsteroids() {
+  spawnAsteroidsAndEnemies() {
     setInterval(() => {
+      // Spawn asteroids
       const asteroid = {
         x: Math.random() * window.innerWidth,
         y: 0,
@@ -193,13 +197,29 @@ class App extends Component {
         height: 40,
         speed: 2,
       };
-      this.setState((prevState) => ({ asteroids: [...prevState.asteroids, asteroid] }));
+
+      // Spawn enemies (similar to asteroids)
+      const enemy = {
+        x: Math.random() * window.innerWidth,
+        y: 0,
+        width: 40,
+        height: 40,
+        speed: 2,
+      };
+
+      this.setState((prevState) => ({
+        asteroids: [...prevState.asteroids, asteroid],
+        enemies: [...prevState.enemies, enemy], // Add enemies to state
+      }));
     }, 2000);
   }
+
 
   checkCollisions() {
     const { playerPosition, bullets, asteroids } = this.state;
     const updatedAsteroids = [...asteroids];
+    const updatedEnemies = [...enemies]; // Clone the enemies array
+
     const updatedBullets = [];
 
     for (const bullet of bullets) {
@@ -221,6 +241,8 @@ class App extends Component {
     this.setState({
       asteroids: updatedAsteroids,
       bullets: updatedBullets,
+      enemies: updatedEnemies, // Update enemies array
+
     });
 
     // Check collisions with player and decrement health
@@ -276,7 +298,7 @@ class App extends Component {
   }
 
   drawGame() {
-    const { playerPosition, bullets, asteroids, score, health } = this.state;
+    const { playerPosition, bullets, asteroids, enemies, score, health } = this.state;
     const canvas = this.canvasRef.current;
     const ctx = canvas.getContext('2d');
 
@@ -307,6 +329,11 @@ class App extends Component {
     // Draw health bar
     ctx.fillStyle = 'red';
     ctx.fillRect(20, 40, health * 2, 20);
+
+    ctx.fillStyle = 'purple';
+    for (const enemy of enemies) {
+      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    }
   }
 
   gameLoop() {
@@ -321,6 +348,12 @@ class App extends Component {
     return (
       <div className="App">
         <canvas ref={this.canvasRef}></canvas>
+        {this.state.enemies.map((enemy, index) => (
+        <Enemy
+          key={index}
+          asteroids={enemy.asteroids}
+        />
+      ))}
         <Player position={this.state.playerPosition} />
         {this.state.asteroids.map((asteroid, index) => (
   <Asteroid
