@@ -3,13 +3,15 @@ import React, { Component } from 'react';
 class Bullet extends Component {
   // Add a getBoundingBox method to Bullet
   getBoundingBox() {
+    const { x, y, width, height } = this.props;
     return {
-      x: this.props.x,
-      y: this.props.y,
-      width: this.props.width,
-      height: this.props.height,
+      x,
+      y,
+      width,
+      height,
     };
   }
+
   render() {
     return (
       <div
