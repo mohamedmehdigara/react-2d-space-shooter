@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 const AsteroidWrapper = styled.div`
@@ -8,11 +8,18 @@ const AsteroidWrapper = styled.div`
   background-color: #ff0000;
 `;
 
-class Asteroid extends Component {
-  render() {
-    const { top, left } = this.props;
-    return <AsteroidWrapper style={{ top, left }} />;
-  }
-}
+const Asteroid = ({ top, left }) => {
+  // Add a getBoundingBox function
+  const getBoundingBox = () => {
+    return {
+      x: left,
+      y: top,
+      width: 40, // Set the width of the asteroid
+      height: 40, // Set the height of the asteroid
+    };
+  };
 
-export default Asteroid;
+  return <AsteroidWrapper style={{ top, left }} />;
+};
+
+export default React.memo(Asteroid);
