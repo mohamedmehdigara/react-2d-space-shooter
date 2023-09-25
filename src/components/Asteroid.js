@@ -28,4 +28,16 @@ const Asteroid = ({ top, left }) => {
   );
 };
 
+export const getBoundingBox = (top, left) => {
+  const width = 20; // Set the default width
+  const height = 20; // Set the default height
+
+  return {
+    x: left,
+    y: top,
+    width: width,
+    height: height,
+  };
+};
+
 export default React.memo(Asteroid);
