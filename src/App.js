@@ -208,6 +208,8 @@ class App extends Component {
         width: 40,
         height: 40,
         speed: 2,
+        asteroids: [], // Initialize as an empty array
+
       };
 
       const powerUp = {
