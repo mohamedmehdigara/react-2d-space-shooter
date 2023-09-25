@@ -388,16 +388,16 @@ class App extends Component {
       ))}
         <Player position={this.state.playerPosition} />
         {this.state.asteroids.map((asteroid, index) => (
-  <Asteroid
-  key={index}
-  top={asteroid.y}
-  left={asteroid.x}
-  getBoundingBox={() => ({
-    x: asteroid.x,
-    y: asteroid.y,
-    width: 40, // Set the width of the asteroid
-    height: 40, // Set the height of the asteroid
-  })}
+ <Asteroid
+ key={index}
+ top={asteroid.y}
+ left={asteroid.x}
+ getBoundingBox={() => ({
+   x: asteroid.x,
+   y: asteroid.y,
+   width: asteroid.width, // Adjust with the actual width of the asteroid
+   height: asteroid.height, // Adjust with the actual height of the asteroid
+ })}
 />
 
 ))}
