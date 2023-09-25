@@ -14,6 +14,7 @@ import HealthBar from './components/HealthBar';
 import SpaceShip from "./components/SpaceShip";
 import Bullet from './components/Bullet';
 import Asteroid from './components/Asteroid';
+import PowerUp from './components/PowerUp';
 
 
 class App extends Component {
@@ -39,6 +40,8 @@ class App extends Component {
         height: 30,
       },
       health: 100, // Initial health value
+      powerUps: [], // Initialize power-ups as an empty array
+
     
     };
     
@@ -207,15 +210,22 @@ class App extends Component {
         speed: 2,
       };
 
+      const powerUp = {
+        x: Math.random() * window.innerWidth,
+        y: 0,
+      };
+
       this.setState((prevState) => ({
         asteroids: [...prevState.asteroids, asteroid],
         enemies: [...prevState.enemies, enemy], // Add enemies to state
+        powerUps: [...prevState.powerUps, powerUp], // Add power-ups to state
+
       }));
     }, 2000);
   }
 
   checkCollisions() {
-    const { playerPosition, bullets, asteroids, enemies } = this.state;
+    const { playerPosition, bullets, asteroids, enemies, powerUps } = this.state;
     const updatedAsteroids = [...asteroids];
     const updatedEnemies = [...enemies]; // Clone the enemies array
   
@@ -236,11 +246,32 @@ class App extends Component {
         }
       }
     }
+
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+      const powerUp = powerUps[i];
+      const powerUpBoundingBox = {
+        x: powerUp.x,
+        y: powerUp.y,
+        width: 20 /* power-up width */,
+        height: 20 /* power-up height */,
+      };
+  
+      if (this.isCollision(playerPosition, powerUpBoundingBox)) {
+        // Handle the power-up effect here
+        // For example, increase the player's score
+        this.setState((prevState) => ({ score: prevState.score + 10 }));
+  
+        // Remove the collected power-up
+        powerUps.splice(i, 1);
+      }
+    }
   
     this.setState({
       asteroids: updatedAsteroids,
       bullets: updatedBullets,
       enemies: updatedEnemies, // Update enemies array
+      powerUps: powerUps, // Update power-ups array
+
     });
   
     // Check collisions with player and decrement health
@@ -369,6 +400,13 @@ class App extends Component {
             y={bullet.y}
           />
         ))}
+        {this.state.powerUps.map((powerUp, index) => (
+  <PowerUp
+    key={index}
+    x={powerUp.x}
+    y={powerUp.y}
+  />
+))}
         <Scoreboard score={this.score} />
         <HealthBar health={this.health} />
       </div>
