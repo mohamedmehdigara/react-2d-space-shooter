@@ -398,12 +398,8 @@ class App extends Component {
  key={index}
  top={asteroid.y}
  left={asteroid.x}
- getBoundingBox={() => ({
-   x: asteroid.x,
-   y: asteroid.y,
-   width: asteroid.width, // Adjust with the actual width of the asteroid
-   height: asteroid.height, // Adjust with the actual height of the asteroid
- })}
+ width={asteroid.width}
+ height={asteroid.height}
 />
 
 ))}

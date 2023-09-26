@@ -32,15 +32,8 @@ const Asteroid = ({ top, left, width, height }) => {
   };
 
   return (
-    <AsteroidWrapper
-      style={{
-        top,
-        left,
-        width: randomSize,
-        height: randomSize,
-      }}
-      color={randomColor}
-    />
+    <AsteroidWrapper style={{ top, left, width, height }} />
+
   );
 };
 
