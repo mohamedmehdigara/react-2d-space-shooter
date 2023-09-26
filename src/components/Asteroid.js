@@ -9,17 +9,21 @@ const AsteroidWrapper = styled.div`
 `;
 
 const Asteroid = ({ top, left }) => {
-  // Define the getBoundingBox function
+  const width = 40; // Set the default width
+  const height = 40; // Set the default height
+
   const getBoundingBox = () => {
     return {
       x: left,
       y: top,
-      width: 40, // Set the width of the asteroid
-      height: 40, // Set the height of the asteroid
+      width: width,
+      height: height,
     };
   };
 
-  return <AsteroidWrapper style={{ top, left }} />;
+  return (
+    <AsteroidWrapper style={{ top, left, width, height }} />
+  );
 };
 
 export default React.memo(Asteroid);

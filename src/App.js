@@ -42,7 +42,7 @@ class App extends Component {
       health: 100, // Initial health value
       powerUps: [], // Initialize power-ups as an empty array
       rotationAngle: 0,       // Current rotation angle of the player
-      rotationSpeed: 3,       // Speed of rotation (in degrees per frame)
+      rotationSpeed: 5,       // Speed of rotation (in degrees per frame)
       playerRotation: 0,     // Initial rotation angle
       playerRotationSpeed: 2, // Rotation speed in degrees per frame
     };
@@ -114,10 +114,10 @@ class App extends Component {
   
     switch (event.key) {
       case 'ArrowLeft':
-        this.rotatePlayer(this.state.playerRotationSpeed);
+        this.rotatePlayer(-this.state.playerRotationSpeed); // Rotate left with a negative speed
         break;
       case 'ArrowRight':
-        this.rotatePlayer(this.state.playerRotationSpeed);
+        this.rotatePlayer(this.state.playerRotationSpeed); // Rotate right with a positive speed
         break;
       case 'ArrowUp':
         this.movePlayer('up', speed);
