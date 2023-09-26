@@ -41,7 +41,8 @@ class App extends Component {
       },
       health: 100, // Initial health value
       powerUps: [], // Initialize power-ups as an empty array
-
+      rotationAngle: 0,       // Current rotation angle of the player
+      rotationSpeed: 3,       // Speed of rotation (in degrees per frame)
     
     };
     
@@ -112,11 +113,11 @@ class App extends Component {
   
     switch (event.key) {
       case 'ArrowLeft':
-        this.movePlayer('left', speed);
-        break;
+        this.rotatePlayer('left');
+      break;
       case 'ArrowRight':
-        this.movePlayer('right', speed);
-        break;
+        this.rotatePlayer('right');
+      break;
       case 'ArrowUp':
         this.movePlayer('up', speed);
         break;
@@ -179,14 +180,34 @@ class App extends Component {
   }
   
 
+  rotatePlayer(direction) {
+    const { rotationAngle, rotationSpeed } = this.state;
+    const newRotationAngle = direction === 'left'
+      ? rotationAngle - rotationSpeed
+      : rotationAngle + rotationSpeed;
+  
+    this.setState({ rotationAngle: newRotationAngle });
+  }
+  
+  // In your shootBullet function, set bullet direction based on rotation
   shootBullet() {
-    const { playerPosition } = this.state;
+    const { playerPosition, rotationAngle } = this.state;
+    const bulletSpeed = 10; // Adjust bullet speed as needed
+  
+    // Calculate bullet direction based on rotation angle
+    const bulletDirectionX = Math.sin((rotationAngle * Math.PI) / 180);
+    const bulletDirectionY = -Math.cos((rotationAngle * Math.PI) / 180);
+  
     const bullet = {
       x: playerPosition.x + playerPosition.width / 2,
       y: playerPosition.y,
+      directionX: bulletDirectionX,
+      directionY: bulletDirectionY,
+      speed: bulletSpeed,
       width: 5,
       height: 20,
     };
+  
     this.setState((prevState) => ({ bullets: [...prevState.bullets, bullet] }));
   }
 

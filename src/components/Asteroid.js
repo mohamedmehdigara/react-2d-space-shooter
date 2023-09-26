@@ -9,14 +9,8 @@ const AsteroidWrapper = styled.div`
 `;
 
 const Asteroid = ({ top, left }) => {
-  const width = 40;
-  const height = 40;
-
   return (
-    <AsteroidWrapper
-      style={{ top, left, width, height }}
-      data-bounding-box={`{ "x": ${left}, "y": ${top}, "width": ${width}, "height": ${height} }`}
-    />
+    <AsteroidWrapper style={{ top, left }} />
   );
 };
 
