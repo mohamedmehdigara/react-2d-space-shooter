@@ -187,15 +187,27 @@ class App extends Component {
       playerRotation: prevState.playerRotation + rotationDelta,
     }));
   }
+
   
-  // In your shootBullet function, set bullet direction based on rotation
   shootBullet() {
     const { playerPosition, playerRotation } = this.state;
     const bulletSpeed = 10; // Adjust bullet speed as needed
   
+    // Calculate the position of the bullet's origin (center of the player's spaceship)
+    const bulletOriginX = playerPosition.x + playerPosition.width / 2;
+    const bulletOriginY = playerPosition.y + playerPosition.height / 2;
+  
+    // Calculate the offset for the bullet's initial position based on rotation
+    const bulletOffsetX = Math.sin((playerRotation * Math.PI) / 180) * (playerPosition.width / 2);
+    const bulletOffsetY = -Math.cos((playerRotation * Math.PI) / 180) * (playerPosition.height / 2);
+  
+    // Calculate the actual initial position of the bullet
+    const bulletX = bulletOriginX + bulletOffsetX - 2.5; // Adjust for the bullet's width
+    const bulletY = bulletOriginY + bulletOffsetY;
+  
     const bullet = {
-      x: playerPosition.x + playerPosition.width / 2,
-      y: playerPosition.y,
+      x: bulletX,
+      y: bulletY,
       width: 5,
       height: 20,
       direction: playerRotation, // Set bullet direction based on player's rotation
