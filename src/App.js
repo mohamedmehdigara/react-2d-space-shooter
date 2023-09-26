@@ -43,7 +43,8 @@ class App extends Component {
       powerUps: [], // Initialize power-ups as an empty array
       rotationAngle: 0,       // Current rotation angle of the player
       rotationSpeed: 3,       // Speed of rotation (in degrees per frame)
-    
+      playerRotation: 0,     // Initial rotation angle
+      playerRotationSpeed: 2, // Rotation speed in degrees per frame
     };
     
     // Bind event handlers to this instance
@@ -113,11 +114,11 @@ class App extends Component {
   
     switch (event.key) {
       case 'ArrowLeft':
-        this.rotatePlayer('left');
-      break;
+        this.rotatePlayer(this.state.playerRotationSpeed);
+        break;
       case 'ArrowRight':
-        this.rotatePlayer('right');
-      break;
+        this.rotatePlayer(this.state.playerRotationSpeed);
+        break;
       case 'ArrowUp':
         this.movePlayer('up', speed);
         break;
@@ -180,37 +181,30 @@ class App extends Component {
   }
   
 
-  rotatePlayer(direction) {
-    const { rotationAngle, rotationSpeed } = this.state;
-    const newRotationAngle = direction === 'left'
-      ? rotationAngle - rotationSpeed
-      : rotationAngle + rotationSpeed;
-  
-    this.setState({ rotationAngle: newRotationAngle });
+  rotatePlayer(rotationDelta) {
+    // Update player's rotation angle
+    this.setState((prevState) => ({
+      playerRotation: prevState.playerRotation + rotationDelta,
+    }));
   }
   
   // In your shootBullet function, set bullet direction based on rotation
   shootBullet() {
-    const { playerPosition, rotationAngle } = this.state;
+    const { playerPosition, playerRotation } = this.state;
     const bulletSpeed = 10; // Adjust bullet speed as needed
-  
-    // Calculate bullet direction based on rotation angle
-    const bulletDirectionX = Math.sin((rotationAngle * Math.PI) / 180);
-    const bulletDirectionY = -Math.cos((rotationAngle * Math.PI) / 180);
   
     const bullet = {
       x: playerPosition.x + playerPosition.width / 2,
       y: playerPosition.y,
-      directionX: bulletDirectionX,
-      directionY: bulletDirectionY,
-      speed: bulletSpeed,
       width: 5,
       height: 20,
+      direction: playerRotation, // Set bullet direction based on player's rotation
+      speed: bulletSpeed,
     };
   
     this.setState((prevState) => ({ bullets: [...prevState.bullets, bullet] }));
   }
-
+  
   spawnAsteroidsAndEnemies() {
     setInterval(() => {
       // Spawn asteroids
@@ -321,19 +315,24 @@ class App extends Component {
   updateBullets() {
     const { bullets } = this.state;
     const updatedBullets = [];
-
+  
     for (const bullet of bullets) {
-      bullet.y -= 10; // Adjust bullet speed as needed
-
+      // Calculate new bullet position based on direction
+      const deltaX = Math.sin((bullet.direction * Math.PI) / 180) * bullet.speed;
+      const deltaY = -Math.cos((bullet.direction * Math.PI) / 180) * bullet.speed;
+  
+      bullet.x += deltaX;
+      bullet.y += deltaY;
+  
       // Remove bullets that are off-screen
       if (bullet.y + bullet.height > 0) {
         updatedBullets.push(bullet);
       }
     }
-
+  
     this.setState({ bullets: updatedBullets });
   }
-
+  
   updateAsteroids() {
     const { asteroids } = this.state;
     const updatedAsteroids = [];
@@ -351,43 +350,29 @@ class App extends Component {
   }
 
   drawGame() {
-    const { playerPosition, bullets, asteroids, enemies, score, health } = this.state;
+    const { playerPosition, bullets, asteroids, enemies, score, health, playerRotation } = this.state;
     const canvas = this.canvasRef.current;
     const ctx = canvas.getContext('2d');
-
+  
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  
+    // Save the current context state
+    ctx.save();
+  
+    // Translate the context to the center of the player's spaceship
+    ctx.translate(playerPosition.x + playerPosition.width / 2, playerPosition.y + playerPosition.height / 2);
+  
+    // Apply rotation
+    ctx.rotate((playerRotation * Math.PI) / 180);
+  
     // Draw player
     ctx.fillStyle = 'blue';
-    ctx.fillRect(playerPosition.x, playerPosition.y, playerPosition.width, playerPosition.height);
-
-    // Draw bullets
-    ctx.fillStyle = 'red';
-    for (const bullet of bullets) {
-      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    ctx.fillRect(-playerPosition.width / 2, -playerPosition.height / 2, playerPosition.width, playerPosition.height);
+  
+    // Restore the context state to avoid affecting other drawings
+    ctx.restore();
     }
-
-    // Draw asteroids
-    ctx.fillStyle = 'gray';
-    for (const asteroid of asteroids) {
-      ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
-    }
-
-    // Draw scoreboard
-    ctx.fillStyle = 'white';
-    ctx.font = '24px Arial';
-    ctx.fillText(`Score: ${score}`, 20, 30);
-
-    // Draw health bar
-    ctx.fillStyle = 'red';
-    ctx.fillRect(20, 40, health * 2, 20);
-
-    ctx.fillStyle = 'purple';
-    for (const enemy of enemies) {
-      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-    }
-  }
 
   gameLoop() {
     this.checkCollisions();
