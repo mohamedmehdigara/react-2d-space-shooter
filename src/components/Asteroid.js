@@ -3,38 +3,33 @@ import styled from 'styled-components';
 
 const AsteroidWrapper = styled.div`
   position: absolute;
-  background-color: ${(props) => props.color || '#ff0000'};
-  animation: rotate 5s linear infinite; /* Add rotation animation */
-
-  @keyframes rotate {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
+  width: 40px;
+  height: 40px;
+  background-color: #ff0000;
 `;
 
-const Asteroid = ({ top, left, width, height }) => {
-  const minSize = 20;
-  const maxSize = 60;
-  const randomSize = Math.floor(Math.random() * (maxSize - minSize + 1) + minSize);
-  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  const getBoundingBox = () => {
-    return {
-      x: left,
-      y: top,
-      width: width,
-      height: height,
-    };
+export function getBoundingBox(left, top, width, height) {
+  return {
+    x: left,
+    y: top,
+    width: width,
+    height: height,
   };
+}
 
+
+const Asteroid = ({ top, left }) => {
+  const width = 40; // Set the default width
+  const height = 40; // Set the default height
+
+  // Define the getBoundingBox function
   return (
     <AsteroidWrapper style={{ top, left, width, height }} />
-
   );
 };
 
 export default React.memo(Asteroid);
+
+// Export the getBoundingBox function as well
+
+

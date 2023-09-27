@@ -13,7 +13,7 @@ import Scoreboard from './components/Scoreboard'; // Import the Scoreboard compo
 import HealthBar from './components/HealthBar';
 import SpaceShip from "./components/SpaceShip";
 import Bullet from './components/Bullet';
-import Asteroid from './components/Asteroid';
+import Asteroid, { getBoundingBox } from './components/Asteroid'; // Import the Asteroid component and getBoundingBox function
 import PowerUp from './components/PowerUp';
 
 
@@ -45,6 +45,14 @@ class App extends Component {
       rotationSpeed: 5,       // Speed of rotation (in degrees per frame)
       playerRotation: 0,     // Initial rotation angle
       playerRotationSpeed: 2, // Rotation speed in degrees per frame
+      getBoundingBox: (left, top, width, height) => {
+        return {
+          x: left,
+          y: top,
+          width: width,
+          height: height,
+        };
+      },
     };
     
     // Bind event handlers to this instance
@@ -254,28 +262,42 @@ class App extends Component {
   }
 
   checkCollisions() {
-    const { playerPosition, bullets, asteroids, enemies, powerUps } = this.state;
-    const updatedAsteroids = [...asteroids];
-    const updatedEnemies = [...enemies]; // Clone the enemies array
-  
+    const { bullets, asteroids, powerUps, playerPosition, enemies } = this.state;
+    const updatedAsteroids = [];
     const updatedBullets = [];
+    const updatedEnemies = [];
+    const updatedPowerUps = [];
   
+    // Check collisions between bullets and asteroids
     for (const bullet of bullets) {
-      const bulletBoundingBox = bullet.getBoundingBox();
+      const bulletBoundingBox = {
+        x: bullet.x,
+        y: bullet.y,
+        width: bullet.width,
+        height: bullet.height,
+      };
+  
+      let asteroidHit = false; // Flag to track if a bullet hit an asteroid
   
       for (let i = updatedAsteroids.length - 1; i >= 0; i--) {
         const asteroid = updatedAsteroids[i];
-        const asteroidBoundingBox = asteroid.getBoundingBox();
+        const asteroidBoundingBox = getBoundingBox(asteroid); // Use getBoundingBox here
   
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
+          // Handle collision logic (e.g., increase score)
+          asteroidHit = true;
+          // You can add more collision effects or scoring logic here
           updatedAsteroids.splice(i, 1);
-          this.setState((prevState) => ({ score: prevState.score + 1 }));
-        } else {
-          updatedBullets.push(bullet);
         }
       }
+  
+      // If the bullet didn't hit any asteroid, keep it
+      if (!asteroidHit) {
+        updatedBullets.push(bullet);
+      }
     }
-
+  
+    // Check collisions between player and power-ups
     for (let i = powerUps.length - 1; i >= 0; i--) {
       const powerUp = powerUps[i];
       const powerUpBoundingBox = {
@@ -292,27 +314,30 @@ class App extends Component {
   
         // Remove the collected power-up
         powerUps.splice(i, 1);
+      } else {
+        updatedPowerUps.push(powerUp);
       }
     }
   
-    this.setState({
-      asteroids: updatedAsteroids,
-      bullets: updatedBullets,
-      enemies: updatedEnemies, // Update enemies array
-      powerUps: powerUps, // Update power-ups array
-
-    });
-  
-    // Check collisions with player and decrement health
+    // Check collisions between player and asteroids (for health decrement)
     for (const asteroid of updatedAsteroids) {
       const playerBoundingBox = playerPosition;
       const asteroidBoundingBox = asteroid.getBoundingBox();
   
       if (this.isCollision(playerBoundingBox, asteroidBoundingBox)) {
+        // Handle player-asteroid collision (e.g., decrement health)
         this.setState((prevState) => ({ health: prevState.health - 10 }));
       }
     }
+  
+    // Update state with the results of collision checks
+    this.setState({
+      asteroids: updatedAsteroids,
+      bullets: updatedBullets,
+      powerUps: updatedPowerUps,
+    });
   }
+  
   
 
   isCollision(rect1, rect2) {
@@ -412,6 +437,8 @@ class App extends Component {
  left={asteroid.x}
  width={asteroid.width}
  height={asteroid.height}
+ getBoundingBox={this.state.getBoundingBox}
+
 />
 
 ))}
