@@ -179,7 +179,6 @@ class App extends Component {
         break;
     }
   }
-
   stopPlayer() {
     // Set player movement speed to 0 to stop the player
     this.setState({
@@ -262,13 +261,12 @@ class App extends Component {
   }
 
   checkCollisions() {
-    const { bullets, asteroids, powerUps, playerPosition, enemies } = this.state;
+    const { bullets, asteroids } = this.state;
+    const canvasWidth = this.canvasRef.current.width;
+    const canvasHeight = this.canvasRef.current.height;
     const updatedAsteroids = [];
     const updatedBullets = [];
-    const updatedEnemies = [];
-    const updatedPowerUps = [];
   
-    // Check collisions between bullets and asteroids
     for (const bullet of bullets) {
       const bulletBoundingBox = {
         x: bullet.x,
@@ -277,56 +275,24 @@ class App extends Component {
         height: bullet.height,
       };
   
-      let asteroidHit = false; // Flag to track if a bullet hit an asteroid
-  
+      // Check for collisions with asteroids
       for (let i = updatedAsteroids.length - 1; i >= 0; i--) {
         const asteroid = updatedAsteroids[i];
-        const asteroidBoundingBox = getBoundingBox(asteroid); // Use getBoundingBox here
+        const asteroidBoundingBox = asteroid.getBoundingBox();
   
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
           // Handle collision logic (e.g., increase score)
-          asteroidHit = true;
-          // You can add more collision effects or scoring logic here
           updatedAsteroids.splice(i, 1);
+  
+          // Trigger an animation for asteroid disappearance (you can implement this)
+          // For now, just remove the bullet
+          continue;
         }
       }
   
-      // If the bullet didn't hit any asteroid, keep it
-      if (!asteroidHit) {
+      // Check if the bullet is still within the visible area
+      if (this.isBulletOnScreen(bullet, canvasWidth, canvasHeight)) {
         updatedBullets.push(bullet);
-      }
-    }
-  
-    // Check collisions between player and power-ups
-    for (let i = powerUps.length - 1; i >= 0; i--) {
-      const powerUp = powerUps[i];
-      const powerUpBoundingBox = {
-        x: powerUp.x,
-        y: powerUp.y,
-        width: 20 /* power-up width */,
-        height: 20 /* power-up height */,
-      };
-  
-      if (this.isCollision(playerPosition, powerUpBoundingBox)) {
-        // Handle the power-up effect here
-        // For example, increase the player's score
-        this.setState((prevState) => ({ score: prevState.score + 10 }));
-  
-        // Remove the collected power-up
-        powerUps.splice(i, 1);
-      } else {
-        updatedPowerUps.push(powerUp);
-      }
-    }
-  
-    // Check collisions between player and asteroids (for health decrement)
-    for (const asteroid of updatedAsteroids) {
-      const playerBoundingBox = playerPosition;
-      const asteroidBoundingBox = asteroid.getBoundingBox();
-  
-      if (this.isCollision(playerBoundingBox, asteroidBoundingBox)) {
-        // Handle player-asteroid collision (e.g., decrement health)
-        this.setState((prevState) => ({ health: prevState.health - 10 }));
       }
     }
   
@@ -334,11 +300,9 @@ class App extends Component {
     this.setState({
       asteroids: updatedAsteroids,
       bullets: updatedBullets,
-      powerUps: updatedPowerUps,
     });
   }
-  
-  
+    
 
   isCollision(rect1, rect2) {
     return (
@@ -351,23 +315,46 @@ class App extends Component {
 
   updateBullets() {
     const { bullets } = this.state;
-    const updatedBullets = [];
+    const canvasWidth = this.canvasRef.current.width;
+    const canvasHeight = this.canvasRef.current.height;
   
-    for (const bullet of bullets) {
-      // Calculate new bullet position based on direction
-      const deltaX = Math.sin((bullet.direction * Math.PI) / 180) * bullet.speed;
-      const deltaY = -Math.cos((bullet.direction * Math.PI) / 180) * bullet.speed;
+    // Helper function to calculate the new position of a bullet
+    const calculateNewPosition = (bullet) => {
+      const bulletAngleInRadians = (bullet.direction * Math.PI) / 180;
+      const deltaX = Math.sin(bulletAngleInRadians) * bullet.speed;
+      const deltaY = -Math.cos(bulletAngleInRadians) * bullet.speed;
   
-      bullet.x += deltaX;
-      bullet.y += deltaY;
+      // Calculate new position
+      const newX = bullet.x + deltaX;
+      const newY = bullet.y + deltaY;
   
-      // Remove bullets that are off-screen
-      if (bullet.y + bullet.height > 0) {
-        updatedBullets.push(bullet);
+      return { ...bullet, x: newX, y: newY };
+    };
+  
+    // Update bullet positions
+    const updatedBullets = bullets.map((bullet) => {
+      const newPosition = calculateNewPosition(bullet);
+  
+      // Check if the bullet is still within the visible area
+      if (this.isBulletOnScreen(newPosition, canvasWidth, canvasHeight)) {
+        return newPosition;
       }
-    }
   
+      return null; // Remove bullets that are off-screen
+    }).filter(Boolean); // Filter out null values (off-screen bullets)
+  
+    // Update the state with the updated bullet positions
     this.setState({ bullets: updatedBullets });
+  }
+  
+  // Helper function to check if a bullet is within the visible area
+  isBulletOnScreen(bullet, canvasWidth, canvasHeight) {
+    return (
+      bullet.x >= 0 &&
+      bullet.x <= canvasWidth &&
+      bullet.y >= 0 &&
+      bullet.y <= canvasHeight
+    );
   }
   
   updateAsteroids() {
@@ -411,13 +398,37 @@ class App extends Component {
     ctx.restore();
     }
 
-  gameLoop() {
-    this.checkCollisions();
-    this.updateBullets();
-    this.updateAsteroids();
-    this.drawGame();
-    requestAnimationFrame(() => this.gameLoop());
-  }
+    gameLoop() {
+      this.checkCollisions();
+      this.updateBullets();
+      this.updateAsteroids();
+      this.drawGame();
+      requestAnimationFrame(() => this.gameLoop());
+    } 
+
+    animateAsteroidDisappearance() {
+      const { asteroids } = this.state;
+      const updatedAsteroids = [...asteroids];
+    
+      for (const asteroid of updatedAsteroids) {
+        // Check if the asteroid should disappear (e.g., reached minimum opacity)
+        if (asteroid.opacity <= 0) {
+          // Remove the asteroid from the updatedAsteroids array
+          updatedAsteroids.splice(updatedAsteroids.indexOf(asteroid), 1);
+        } else {
+          // Reduce the asteroid's opacity (you can adjust the decrement rate)
+          asteroid.opacity -= 0.02; // Example decrement rate, adjust as needed
+        }
+      }
+    
+      // Update the state with the updated asteroid array
+      this.setState({ asteroids: updatedAsteroids });
+    
+      // Continue the animation loop
+      requestAnimationFrame(() => this.animateAsteroidDisappearance());
+    }
+    
+
 
   render() {
     return (
