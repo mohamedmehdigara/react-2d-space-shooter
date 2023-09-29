@@ -266,7 +266,7 @@ class App extends Component {
     const { bullets, asteroids } = this.state;
     const canvasWidth = this.canvasRef.current.width;
     const canvasHeight = this.canvasRef.current.height;
-    const updatedAsteroids = [];
+    const updatedAsteroids = [...asteroids];
     const updatedBullets = [];
   
     for (const bullet of bullets) {
@@ -296,11 +296,16 @@ class App extends Component {
           console.log("Bullet hit asteroid!"); // Add this line to check if a collision is detected
 
           updatedAsteroids.splice(i, 1);
+
+          asteroid.shouldDisappear = true;
+        } else {
+          updatedBullets.push(bullet);
+        }
+      
   
           // Trigger an animation for asteroid disappearance (you can implement this)
           // For now, just remove the bullet
           continue;
-        }
       }
   
       // Check if the bullet is still within the visible area
