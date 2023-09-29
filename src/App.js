@@ -262,7 +262,7 @@ class App extends Component {
 
   checkCollisions() {
     console.log("Checking collisions..."); // Add this line to check if the function is called
-
+  
     const { bullets, asteroids } = this.state;
     const canvasWidth = this.canvasRef.current.width;
     const canvasHeight = this.canvasRef.current.height;
@@ -280,32 +280,28 @@ class App extends Component {
       // Check for collisions with asteroids
       for (let i = updatedAsteroids.length - 1; i >= 0; i--) {
         const asteroid = updatedAsteroids[i];
-
+  
         console.log("Bullet:", bullet);
-      console.log("Asteroid:", asteroid);
-
-      if (!asteroid) {
-        // Handle the null or undefined asteroid, e.g., by skipping it
-        continue;
-      }
-
-      const asteroidBoundingBox = getBoundingBox(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+        console.log("Asteroid:", asteroid);
+  
+        if (!asteroid) {
+          // Handle the null or undefined asteroid, e.g., by skipping it
+          continue;
+        }
+  
+        const asteroidBoundingBox = getBoundingBox(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
   
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
           // Handle collision logic (e.g., increase score)
           console.log("Bullet hit asteroid!"); // Add this line to check if a collision is detected
-
+  
           updatedAsteroids.splice(i, 1);
-
+  
+          // Trigger an animation for asteroid disappearance (you can implement this)
           asteroid.shouldDisappear = true;
         } else {
           updatedBullets.push(bullet);
         }
-      
-  
-          // Trigger an animation for asteroid disappearance (you can implement this)
-          // For now, just remove the bullet
-          continue;
       }
   
       // Check if the bullet is still within the visible area
@@ -320,7 +316,7 @@ class App extends Component {
       bullets: updatedBullets,
     });
   }
-    
+     
 
   isCollision(rect1, rect2) {
     return (

@@ -19,32 +19,41 @@ export function getBoundingBox(left, top, width, height) {
   };
 }
 
-const Asteroid = ({ top, left }) => {
-  const [opacity, setOpacity] = useState(1); // Initial opacity is 1 (fully visible)
-
-  const width = 40; // Set the default width
-  const height = 40; // Set the default height
+const Asteroid = ({ top, left, shouldDisappear }) => {
+  const [opacity, setOpacity] = useState(1);
+  const width = 40;
+  const height = 40;
 
   useEffect(() => {
-    // Function to gradually reduce opacity over time
-    const disappearAsteroid = () => {
-      const interval = setInterval(() => {
-        // Reduce the opacity gradually
-        setOpacity((prevOpacity) => {
-          const newOpacity = prevOpacity - 0.1; // Adjust the step as needed
-          if (newOpacity <= 0) {
-            // Asteroid has disappeared, clear the interval
-            clearInterval(interval);
-          }
-          return newOpacity;
-        });
-      }, 100); // Adjust the interval duration as needed
-    };
+    if (shouldDisappear) {
+      let animationFrameId;
 
-    disappearAsteroid();
-  }, []);
+      const animateDisappearance = (timestamp) => {
+        // Calculate the next opacity value based on time or frame count
+        const newOpacity = opacity - 0.01; // Adjust the step as needed
 
-  return <AsteroidWrapper style={{ top, left, width, height, opacity }} />;
+        if (newOpacity <= 0) {
+          // Animation complete, remove the asteroid
+          cancelAnimationFrame(animationFrameId);
+          return;
+        }
+
+        setOpacity(newOpacity);
+        animationFrameId = requestAnimationFrame(animateDisappearance);
+      };
+
+      animationFrameId = requestAnimationFrame(animateDisappearance);
+
+      return () => {
+        // Clean up: cancel the animation frame when the component unmounts
+        cancelAnimationFrame(animationFrameId);
+      };
+    }
+  }, [opacity, shouldDisappear]);
+
+  return (
+    <AsteroidWrapper style={{ top, left, width, height, opacity }} />
+  );
 };
 
 export default React.memo(Asteroid);
