@@ -296,6 +296,9 @@ class App extends Component {
           console.log("Bullet hit asteroid!"); // Add this line to check if a collision is detected
   
           updatedAsteroids.splice(i, 1);
+
+          console.log("Marking asteroid for disappearance:", asteroid);
+
   
           // Trigger an animation for asteroid disappearance (you can implement this)
           asteroid.shouldDisappear = true;

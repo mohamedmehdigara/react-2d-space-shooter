@@ -26,30 +26,17 @@ const Asteroid = ({ top, left, shouldDisappear }) => {
 
   useEffect(() => {
     if (shouldDisappear) {
-      let animationFrameId;
-
-      const animateDisappearance = (timestamp) => {
-        // Calculate the next opacity value based on time or frame count
-        const newOpacity = opacity - 0.01; // Adjust the step as needed
-
-        if (newOpacity <= 0) {
-          // Animation complete, remove the asteroid
-          cancelAnimationFrame(animationFrameId);
-          return;
-        }
-
-        setOpacity(newOpacity);
-        animationFrameId = requestAnimationFrame(animateDisappearance);
-      };
-
-      animationFrameId = requestAnimationFrame(animateDisappearance);
-
-      return () => {
-        // Clean up: cancel the animation frame when the component unmounts
-        cancelAnimationFrame(animationFrameId);
-      };
+      const interval = setInterval(() => {
+        setOpacity((prevOpacity) => {
+          const newOpacity = prevOpacity - 0.1;
+          if (newOpacity <= 0) {
+            clearInterval(interval);
+          }
+          return newOpacity;
+        });
+      }, 100);
     }
-  }, [opacity, shouldDisappear]);
+  }, [shouldDisappear]);
 
   return (
     <AsteroidWrapper style={{ top, left, width, height, opacity }} />
