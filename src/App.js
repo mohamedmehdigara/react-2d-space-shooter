@@ -289,7 +289,7 @@ class App extends Component {
         continue;
       }
 
-        const asteroidBoundingBox = asteroid.getBoundingBox();
+      const asteroidBoundingBox = getBoundingBox(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
   
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
           // Handle collision logic (e.g., increase score)
