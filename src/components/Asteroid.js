@@ -7,8 +7,10 @@ const AsteroidWrapper = styled.div`
   height: 40px;
   background-color: #ff0000;
   opacity: ${(props) => props.opacity};
-  transition: opacity 0.5s; // Adjust the duration as needed
+  transition: opacity 0.5s;
+  animation: fadeOut 0.5s; /* Apply the fadeOut animation */
 `;
+
 
 export function getBoundingBox(left, top, width, height) {
   return {
@@ -39,6 +41,9 @@ const Asteroid = ({ top, left, shouldDisappear }) => {
             // Asteroid has disappeared, clear the interval
             clearInterval(interval);
           }
+          console.log('Current Opacity:', newOpacity); // Log the current opacity
+
+
           return newOpacity;
         });
       }, 100); // Adjust the interval duration as needed
