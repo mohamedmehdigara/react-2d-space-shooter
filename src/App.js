@@ -299,11 +299,12 @@ class App extends Component {
         if (this.isCollision(bulletBoundingBox, asteroidBoundingBox)) {
           // Handle collision logic (e.g., increase score)
           console.log("Bullet hit asteroid!"); // Add this line to check if a collision is detected
-  
+
           updatedAsteroids.splice(i, 1);
   
           console.log("Marking asteroid for disappearance:", asteroid);
-  
+          console.log("Collision detected. Setting shouldDisappear to true.");
+
           // Trigger an animation for asteroid disappearance (you can implement this)
           asteroid.shouldDisappear = true;
         } else {

@@ -52,6 +52,8 @@ const Asteroid = ({ top, left, shouldDisappear }) => {
     if (shouldDisappear) {
       disappearAsteroid();
     }
+    console.log("Asteroid shouldDisappear:", shouldDisappear);
+
   }, [shouldDisappear]);
   
 
