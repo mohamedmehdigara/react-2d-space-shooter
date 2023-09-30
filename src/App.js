@@ -470,6 +470,7 @@ class App extends Component {
  width={asteroid.width}
  height={asteroid.height}
  getBoundingBox={this.state.getBoundingBox}
+ shouldDisappear={asteroid.shouldDisappear}
 
 />
 
