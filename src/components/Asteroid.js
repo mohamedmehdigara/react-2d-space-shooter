@@ -24,19 +24,31 @@ const Asteroid = ({ top, left, shouldDisappear }) => {
   const width = 40;
   const height = 40;
 
+
+
   useEffect(() => {
-    if (shouldDisappear) {
+    // Function to gradually reduce opacity over time
+    const disappearAsteroid = () => {
+      console.log("Disappearing asteroid animation triggered");
+
       const interval = setInterval(() => {
+        // Reduce the opacity gradually
         setOpacity((prevOpacity) => {
-          const newOpacity = prevOpacity - 0.1;
+          const newOpacity = prevOpacity - 0.1; // Adjust the step as needed
           if (newOpacity <= 0) {
+            // Asteroid has disappeared, clear the interval
             clearInterval(interval);
           }
           return newOpacity;
         });
-      }, 100);
+      }, 100); // Adjust the interval duration as needed
+    };
+  
+    if (shouldDisappear) {
+      disappearAsteroid();
     }
   }, [shouldDisappear]);
+  
 
   return (
     <AsteroidWrapper style={{ top, left, width, height, opacity }} />
