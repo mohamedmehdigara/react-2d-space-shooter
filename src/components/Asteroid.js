@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const fadeOut = keyframes`
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+`;
 
 const AsteroidWrapper = styled.div`
   position: absolute;
@@ -7,10 +16,9 @@ const AsteroidWrapper = styled.div`
   height: 40px;
   background-color: #ff0000;
   opacity: ${(props) => props.opacity};
+  animation: ${(props) => (props.shouldDisappear ? `${fadeOut} 0.5s` : 'none')};
   transition: opacity 0.5s;
-  animation: fadeOut 0.5s; /* Apply the fadeOut animation */
 `;
-
 
 export function getBoundingBox(left, top, width, height) {
   return {
@@ -25,8 +33,6 @@ const Asteroid = ({ top, left, shouldDisappear }) => {
   const [opacity, setOpacity] = useState(1);
   const width = 40;
   const height = 40;
-
-
 
   useEffect(() => {
     // Function to gradually reduce opacity over time
@@ -43,22 +49,19 @@ const Asteroid = ({ top, left, shouldDisappear }) => {
           }
           console.log('Current Opacity:', newOpacity); // Log the current opacity
 
-
           return newOpacity;
         });
       }, 100); // Adjust the interval duration as needed
     };
-  
+
     if (shouldDisappear) {
       disappearAsteroid();
     }
     console.log("Asteroid shouldDisappear:", shouldDisappear);
-
   }, [shouldDisappear]);
-  
 
   return (
-    <AsteroidWrapper style={{ top, left, width, height, opacity }} />
+    <AsteroidWrapper style={{ top, left, width, height, opacity }} shouldDisappear={shouldDisappear} />
   );
 };
 
