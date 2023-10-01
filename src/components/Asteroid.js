@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 
 const fadeOut = keyframes`
   0% {
@@ -16,9 +16,17 @@ const AsteroidWrapper = styled.div`
   height: 40px;
   background-color: #ff0000;
   opacity: ${(props) => props.opacity};
-  animation: ${(props) => (props.shouldDisappear ? `${fadeOut} 0.5s` : 'none')};
+  animation: ${(props) =>
+    props.shouldDisappear
+      ? css`
+          ${fadeOut} 0.5s
+        `
+      : 'none'};
   transition: opacity 0.5s;
 `;
+
+// ... rest of the code remains the same
+
 
 export function getBoundingBox(left, top, width, height) {
   return {
