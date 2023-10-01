@@ -427,7 +427,6 @@ class App extends Component {
       this.drawGame();
       requestAnimationFrame(() => this.gameLoop());
     } 
-
     animateAsteroidDisappearance() {
       const { asteroids } = this.state;
       const updatedAsteroids = [...asteroids];
